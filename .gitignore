@@ -1,0 +1,15 @@
+node_modules/
+client/dist/
+.env
+.env.local
+server/uploads/*
+!server/uploads/.gitkeep
+.DS_Store
+Thumbs.db
+%SystemDrive%/
+qc
+query
+.local/
+test-results/
+playwright-report/
+*.log
