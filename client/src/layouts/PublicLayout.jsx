@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useState } from "react";
 import { NavLink, Outlet, Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 import { Loading, Logo, cx } from "../components/UI";
 import { useAuth } from "../context/AuthContext";
 
@@ -53,7 +53,7 @@ export default function PublicLayout() {
               ) : (
                 <>
                   <Link className="gc-btn gc-btn--quiet" to="/login">Sign in</Link>
-                  <Link className="gc-btn" to="/portal/claims/new">File a claim</Link>
+                  <Link className="gc-btn" to="/portal/claims/new">File a claim <ArrowRight className="gc-icon" aria-hidden="true" /></Link>
                 </>
               )}
             </div>
@@ -69,29 +69,30 @@ export default function PublicLayout() {
         <div className="gc-public-foot-grid">
           <div>
             <Logo inverse />
-            <p>Vehicle care, insurance records and motor claims for Indian vehicle owners, in one account.</p>
+            <p>File and follow vehicle insurance claims, and keep your vehicle’s policy and service records in one account.</p>
+            <p className="gc-caption">In an emergency in India, call <a className="gc-link" href="tel:112">112</a>. getClaim can’t send help.</p>
           </div>
-          <nav aria-label="Using getClaim">
-            <strong>Using getClaim</strong>
+          <nav aria-label="Quick links">
+            <strong>Quick links</strong>
             <Link to="/how-it-works">How it works</Link>
-            <Link to="/claim-eligibility">Can I claim?</Link>
             <Link to="/required-documents">What you need</Link>
-            <Link to="/services">What getClaim does</Link>
+            <Link to="/claim-eligibility">Can I claim?</Link>
             <Link to="/faq">Questions</Link>
           </nav>
           <nav aria-label="About getClaim">
             <strong>About</strong>
             <Link to="/about">About getClaim</Link>
+            <Link to="/services">What getClaim does</Link>
             <Link to="/contact">Contact</Link>
-            <Link to="/surveyor-apply">Surveyors: apply for access</Link>
             <Link to="/privacy-policy">Privacy policy</Link>
           </nav>
-          <div>
-            <strong>In an emergency</strong>
-            <p>For police, fire or ambulance in India, call <a className="gc-link" href="tel:112">112</a>. getClaim can’t send help.</p>
-          </div>
+          <nav aria-label="For partners">
+            <strong>For partners</strong>
+            <Link to="/surveyor-apply">Surveyors: apply for access</Link>
+            <Link to="/login">Staff sign in</Link>
+          </nav>
         </div>
-        <div className="gc-public-foot-base"><span>© {new Date().getFullYear()} getClaim</span><span>A demonstration service. Settlements are simulated and no money is transferred.</span></div>
+        <div className="gc-public-foot-base"><span>© {new Date().getFullYear()} getClaim. All rights reserved.</span><span>A demonstration service. Settlements are simulated and no money is transferred.</span></div>
       </footer>
     </div>
   );

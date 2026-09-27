@@ -14,10 +14,10 @@ const STAGE_TEXT = [
   ["Settlement", "You see how the payout was worked out: the assessed cost, depreciation and deductibles. In this demo the settlement is recorded but no money is transferred."],
 ];
 
-export function Stages({ level = 3, variant }) {
+export function Stages({ level = 3 }) {
   const Heading = `h${level}`;
   return (
-    <ol className={variant === "timeline" ? "gc-stages gc-stages--timeline" : "gc-stages"}>
+    <ol className="gc-stages">
       {STAGE_TEXT.map(([name, text], i) => (
         <li key={name}>
           <span className="gc-stages-n" aria-hidden="true">{i + 1}</span>
@@ -159,7 +159,7 @@ export function InfoPage({ page }) {
   );
 }
 
-const FAQS = [
+export const FAQS = [
   ["Can I save an unfinished claim?", "Yes. The form keeps your answers on this device as you type. Once you’ve chosen a vehicle and policy, the claim is also saved to your account as a draft. Files you picked but didn’t upload need to be chosen again after a refresh; uploaded files stay with the claim."],
   ["What does the document checklist mean?", "It shows which details and documents are still missing for your kind of claim. It isn’t a prediction of approval, a fraud score or a trust score."],
   ["Who can see my documents?", "You, the surveyor assigned to your claim and the claims team. Other policyholders can’t see your claims, vehicles or documents."],

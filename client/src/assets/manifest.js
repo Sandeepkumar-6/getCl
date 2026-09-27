@@ -7,10 +7,9 @@ export const assets = {
     light: "/assets/brand/getclaim-logo-light.svg",
     claim: "/assets/claims/getclaim-icon.svg",
   },
-  hero: { road: "/assets/hero/hero-road-india.webp", landing: "/assets/hero/landing-hero.webp", landingSm: "/assets/hero/landing-hero-sm.webp", landingCta: "/assets/hero/landing-cta.webp", authRoad: "/assets/hero/auth-road-car.webp", authSignIn: "/assets/hero/auth-signin.webp", authRegister: "/assets/hero/auth-register.webp" },
+  hero: { road: "/assets/hero/hero-road-india.webp", landing: "/assets/hero/landing-hero.webp", highway: "/assets/hero/landing-highway.webp", sunset: "/assets/hero/landing-sunset.webp", authRoad: "/assets/hero/auth-road-car.webp", authSignIn: "/assets/hero/auth-signin.webp", authRegister: "/assets/hero/auth-register.webp" },
   vehicles: {
     nexon: "/assets/vehicles/tata-nexon.webp",
-    nexonLg: "/assets/vehicles/tata-nexon-lg.webp",
     baleno: "/assets/vehicles/maruti-baleno.webp",
     creta: "/assets/vehicles/hyundai-creta.webp",
     amaze: "/assets/vehicles/honda-amaze.webp",
