@@ -14,10 +14,10 @@ const STAGE_TEXT = [
   ["Settlement", "You see how the payout was worked out: the assessed cost, depreciation and deductibles. In this demo the settlement is recorded but no money is transferred."],
 ];
 
-export function Stages({ level = 3 }) {
+export function Stages({ level = 3, variant }) {
   const Heading = `h${level}`;
   return (
-    <ol className="gc-stages">
+    <ol className={variant === "timeline" ? "gc-stages gc-stages--timeline" : "gc-stages"}>
       {STAGE_TEXT.map(([name, text], i) => (
         <li key={name}>
           <span className="gc-stages-n" aria-hidden="true">{i + 1}</span>

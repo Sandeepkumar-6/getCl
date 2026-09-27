@@ -15,14 +15,21 @@ export default function PublicLayout() {
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
   const { pathname } = useLocation();
+  const [scrolled, setScrolled] = useState(false);
   useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   if (pathname === "/login" || pathname === "/register") return <Suspense fallback={<Loading />}><Outlet /></Suspense>;
 
   return (
     <div className="gc-public">
       <a className="gc-skip" href="#main">Skip to main content</a>
-      <header className="gc-public-head">
+      <header className={cx("gc-public-head", scrolled && "is-scrolled")}>
         <div className="gc-public-bar">
           <Logo />
           <button
@@ -63,7 +70,6 @@ export default function PublicLayout() {
           <div>
             <Logo inverse />
             <p>Vehicle care, insurance records and motor claims for Indian vehicle owners, in one account.</p>
-            <p className="gc-caption">This is a demonstration service. Settlements are simulated and no money is transferred.</p>
           </div>
           <nav aria-label="Using getClaim">
             <strong>Using getClaim</strong>
@@ -85,7 +91,7 @@ export default function PublicLayout() {
             <p>For police, fire or ambulance in India, call <a className="gc-link" href="tel:112">112</a>. getClaim can’t send help.</p>
           </div>
         </div>
-        <div className="gc-public-foot-base">© {new Date().getFullYear()} getClaim</div>
+        <div className="gc-public-foot-base"><span>© {new Date().getFullYear()} getClaim</span><span>A demonstration service. Settlements are simulated and no money is transferred.</span></div>
       </footer>
     </div>
   );
