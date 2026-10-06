@@ -21,11 +21,11 @@ Vercel serves client/dist and proxies /api to the public Render API HTTPS origin
 - deploy/vercel.template.json and scripts/configure-vercel.js: generate root vercel.json using the actual Render API origin; frontend build/output settings, API routing, SPA deep links, CSP/security headers, no API caching.
 - server/scripts/bootstrap-admin.js: one-time creation of the owner's initial account; refuses to replace existing accounts and requires a password change and production email second factor.
 
-## Paid Blueprint deployment order
+## Free Blueprint deployment order
 
-1. Connect Vercel/Render to the source repository and review hosting charges, database, storage, email, Vercel, taxes, bandwidth, and workspace charges before provisioning.
+1. Connect Vercel/Render to the source repository. The API Blueprint uses Render's free web-service plan; free services may sleep when idle, have limited resources, and are not intended for production availability guarantees. Review current provider limits before proceeding.
 2. Choose the final Vercel project/domain. Set Render CLIENT_URL to that exact HTTPS origin. Supply a fresh managed MONGO_URI, private S3 credentials/bucket, and verified Resend sender values through Render. For non-AWS S3 storage, set S3_ENDPOINT and S3_FORCE_PATH_STYLE as required; adjust S3_REGION if needed. Set JWT_SECRET to a securely generated value of at least 64 characters in the dashboard.
-3. Deploy render.yaml after reviewing costs and entering required secrets. Verify `/api/health` reports the database connected.
+3. Deploy render.yaml and enter the required secrets. Verify `/api/health` reports the database connected.
 4. Run `node scripts/configure-vercel.js https://ACTUAL-API-HOST.onrender.com` with the actual API origin. Commit the resulting vercel.json to the deployment source. Import the repository root into Vercel; keep the configured build command and client/dist output. Do not set a frontend API URL pointing directly to Render.
 5. Verify TRUST_PROXY_HOPS against the actual Render/Vercel forwarding topology. The blueprint starts at 1; inspect trusted forwarding behavior before opening traffic. Deploy Vercel to its final origin, verify security headers and /api/health through Vercel.
 6. Supply temporary BOOTSTRAP_ADMIN_NAME/EMAIL/PHONE/PASSWORD variables in Render and run `node scripts/bootstrap-admin.js` from the service's /app/server directory. Remove the temporary variables afterwards. Verify staff OTP email and password change. Customer accounts should register normally.

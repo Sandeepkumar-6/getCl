@@ -3,7 +3,7 @@ services:
     name: getclaim-api
     runtime: docker
     region: singapore
-    plan: 0.5c-512mb
+    plan: free
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /api/health
