@@ -1,5 +1,5 @@
 # Temporary college demo: all resources created here use Render's free plan.
-# Atlas getclaim_db is required; this does not create a paid database or scanner.
+# Dedicated Atlas getclaim_prod is required; this does not create a paid database or scanner.
 services:
   - type: web
     name: getclaim-api

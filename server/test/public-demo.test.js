@@ -46,7 +46,7 @@ test("college demo saves a new account, signs in and retains production cookie s
 test("college demo blocks file uploads and email recovery, and requires an isolated database", async () => {
   assert.equal((await request(app).post("/api/auth/forgot-password").send({ email: "student_test@demo.getclaim.invalid" })).status, 403);
   assert.equal((await request(app).post("/api/vehicles/example/photo").attach("file", Buffer.from("fake-file"), "demo.png")).status, 403);
-  const env = { NODE_ENV: "production", PUBLIC_DEMO: "true", JWT_SECRET: "x".repeat(64), CLIENT_URL: "https://claims.example.com", MONGO_URI: "mongodb+srv://user:pass@cluster.example.com/getclaim_db" };
+  const env = { NODE_ENV: "production", PUBLIC_DEMO: "true", JWT_SECRET: "x".repeat(64), CLIENT_URL: "https://claims.example.com", MONGO_URI: "mongodb+srv://user:pass@cluster.example.com/getclaim_prod" };
   assert.deepEqual(productionConfigErrors(env), []);
   assert.ok(productionConfigErrors({ ...env, MONGO_URI: "mongodb+srv://user:pass@cluster.example.com/other_db" }).length);
   assert.ok(productionConfigErrors({ ...env, MONGO_URI: "invalid" }).length);

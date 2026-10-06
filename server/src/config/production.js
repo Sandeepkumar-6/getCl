@@ -17,8 +17,8 @@ export function productionConfigErrors(env = process.env) {
     if (!env.MONGO_URI || !["mongodb:", "mongodb+srv:"].includes(url.protocol) || ["localhost", "127.0.0.1", "::1"].includes(url.hostname))
       errors.push("MONGO_URI must point to a managed production MongoDB database.");
   } catch { errors.push("MONGO_URI must be configured for production."); }
-  if (isPublicDemo(env) && databaseName !== "getclaim_db")
-    errors.push("Public demo requires the isolated getclaim_db database.");
+  if (isPublicDemo(env) && databaseName !== "getclaim_prod")
+    errors.push("Public demo requires the dedicated Atlas getclaim_prod database.");
   if (!isPublicDemo(env) && (env.STORAGE_DRIVER !== "s3" || !env.S3_BUCKET))
     errors.push("STORAGE_DRIVER=s3 and S3_BUCKET are required in production.");
   const smtpReady = env.EMAIL_TRANSPORT === "smtp" && env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS && env.EMAIL_FROM;

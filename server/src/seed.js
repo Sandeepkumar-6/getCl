@@ -12,6 +12,7 @@ export async function seed() {
   if (process.env.NODE_ENV === "production" && !isPublicDemo())
     throw new Error("Demo seed is disabled in production.");
   const allowed =
+    (isPublicDemo() && mongoose.connection.name === "getclaim_prod") ||
     mongoose.connection.name === "getclaim_db" ||
     /^getclaim_[a-z0-9_]*test$/i.test(mongoose.connection.name);
   if (!allowed)
