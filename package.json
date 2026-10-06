@@ -13,7 +13,9 @@
   "scripts": {
     "install:all": "npm install",
     "setup": "npm install && npm run seed",
+    "preseed": "node scripts/init-env.js",
     "seed": "npm run seed -w server",
+    "predev": "node scripts/init-env.js",
     "dev": "concurrently -k -n API,WEB -c cyan,blue \"npm run dev -w server\" \"npm run dev -w client\"",
     "build": "npm run build -w client",
     "lint": "eslint .",

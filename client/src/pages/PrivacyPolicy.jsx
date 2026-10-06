@@ -124,7 +124,7 @@ const sections = [
       <p>For privacy-related questions or requests:</p>
       <address className="gc-doc-contact">
         <p><strong>Privacy Team:</strong><br/><a href="mailto:privacy@getclaim.in">privacy@getclaim.in</a></p>
-        <p><strong>Support:</strong><br/><a href="mailto:support@getclaim.in">support@getclaim.in</a></p>
+        <p><strong>Support:</strong><br/><a href="mailto:getclaimedhelp@gmail.com">getclaimedhelp@gmail.com</a></p>
         <p><strong>Business Address:</strong><br/>[Add actual registered/business address]</p>
       </address>
     </>,

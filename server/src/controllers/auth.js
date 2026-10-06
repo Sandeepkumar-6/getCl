@@ -1,10 +1,10 @@
 import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { User } from "../models/index.js";
+import { User, RevokedSession } from "../models/index.js";
 import { assert } from "../utils/errors.js";
 import { persist, removeStoredFile } from "../middleware/uploads.js";
-import { sendPasswordResetEmail, sendVerificationEmail } from "../services/email.js";
+import { sendEmail, sendPasswordResetEmail, sendVerificationEmail } from "../services/email.js";
+import { issueSession, clearSession } from "../middleware/session.js";
 
 const DUMMY_PASSWORD_HASH =
   "$2b$12$C6UzMDM.H6dfI/f/IKcEe.9U2ZJTRpr6pQsz3lYBK5nNq/3rm98e.";
@@ -23,6 +23,8 @@ const safeUser = (user) => {
     "passwordResetExpiresAt",
     "loginFailedAttempts",
     "loginLockedUntil",
+    "mfaChallengeHash", "mfaCodeHash", "mfaExpiresAt", "mfaIssuedAt", "mfaAttempts",
+    "authVersion",
   ])
     delete safe[field];
   if (safe.verificationDocument) {
@@ -33,10 +35,12 @@ const safeUser = (user) => {
   return safe;
 };
 
-const result = (user) => ({
-  user: safeUser(user),
-  token: jwt.sign({ id: user._id }, process.env.JWT_SECRET, { algorithm: "HS256", expiresIn: "8h" }),
-});
+const result = (res, user) => {
+  const token = issueSession(res, user);
+  return { user: safeUser(user), ...(token ? { token } : {}) };
+};
+const staffMfaRequired = () => process.env.NODE_ENV === "production" || process.env.REQUIRE_STAFF_MFA === "true";
+const mfaCodeHash = (challengeId, code) => crypto.createHmac("sha256", process.env.JWT_SECRET).update(`${challengeId}:${code}`).digest("hex");
 
 async function issueVerification(user) {
   const token = newToken();
@@ -64,7 +68,7 @@ export async function register(req, res) {
   });
   await issueVerification(user);
   res.status(201).json({
-    ...result(user),
+    ...result(res, user),
     message: "Account created. Check your email to verify the address.",
   });
 }
@@ -135,7 +139,50 @@ export async function login(req, res) {
     403,
     "Your account is suspended. Contact an administrator for help.",
   );
-  res.json(result(user));
+  if (staffMfaRequired() && user.role !== "POLICYHOLDER") {
+    const challengeId = newToken();
+    const code = String(crypto.randomInt(0, 100000000)).padStart(8, "0");
+    user.mfaChallengeHash = tokenHash(challengeId);
+    user.mfaCodeHash = mfaCodeHash(challengeId, code);
+    user.mfaIssuedAt = new Date();
+    user.mfaExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    user.mfaAttempts = 0;
+    await user.save();
+    try {
+      await sendEmail({ to: user.email, subject: "Your getClaim security code", text: `Your getClaim security code is ${code}. It expires in 5 minutes. If you did not sign in, ignore this message.` });
+    } catch {
+      user.mfaChallengeHash = undefined;
+      user.mfaCodeHash = undefined;
+      user.mfaExpiresAt = undefined;
+      user.mfaIssuedAt = undefined;
+      await user.save();
+      assert(false, 503, "We could not send the security code. Try again later.");
+    }
+    return res.json({ mfaRequired: true, challengeId });
+  }
+  res.json(result(res, user));
+}
+
+export async function completeMfa(req, res) {
+  const user = await User.findOne({
+    mfaChallengeHash: tokenHash(req.body.challengeId),
+    mfaExpiresAt: { $gt: new Date() },
+    status: "ACTIVE",
+  }).select("+mfaChallengeHash +mfaCodeHash +mfaExpiresAt +mfaIssuedAt +mfaAttempts");
+  assert(user && user.mfaAttempts < 5 && user.mfaIssuedAt >= (user.passwordChangedAt || new Date(0)), 401, "Security code is invalid or expired. Sign in again.");
+  const actual = mfaCodeHash(req.body.challengeId, req.body.code);
+  if (!crypto.timingSafeEqual(Buffer.from(actual), Buffer.from(user.mfaCodeHash))) {
+    user.mfaAttempts += 1;
+    await user.save();
+    assert(false, 401, "Security code is invalid or expired. Sign in again.");
+  }
+  user.mfaChallengeHash = undefined;
+  user.mfaCodeHash = undefined;
+  user.mfaExpiresAt = undefined;
+  user.mfaIssuedAt = undefined;
+  user.mfaAttempts = 0;
+  await user.save();
+  res.json(result(res, user));
 }
 
 export async function changePassword(req, res) {
@@ -153,9 +200,21 @@ export async function changePassword(req, res) {
   user.password = await bcrypt.hash(req.body.newPassword, 12);
   user.mustChangePassword = false;
   user.passwordChangedAt = new Date();
+  user.authVersion = (user.authVersion || 0) + 1;
   await user.save();
-  res.json({ message: "Password changed successfully.", ...result(user) });
+  res.json({ message: "Password changed successfully.", ...result(res, user) });
 }
+
+export const logout = async (req, res) => {
+  if (req.sessionJwt?.jti)
+    await RevokedSession.updateOne(
+      { tokenHash: tokenHash(req.sessionJwt.jti) },
+      { $setOnInsert: { expiresAt: new Date(req.sessionJwt.exp * 1000) } },
+      { upsert: true },
+    );
+  clearSession(res);
+  res.json({ message: "Signed out." });
+};
 
 export async function forgotPassword(req, res) {
   const user = await User.findOne({ email: req.body.email, role: "POLICYHOLDER" }).select(
@@ -183,6 +242,7 @@ export async function resetPassword(req, res) {
   assert(user, 400, "This password-reset link is invalid or expired.");
   user.password = await bcrypt.hash(req.body.password, 12);
   user.passwordChangedAt = new Date();
+  user.authVersion = (user.authVersion || 0) + 1;
   user.passwordResetTokenHash = undefined;
   user.passwordResetExpiresAt = undefined;
   user.loginFailedAttempts = 0;

@@ -102,7 +102,7 @@ test("policyholder verification and password reset tokens are single-use", async
   );
 });
 
-test("passwordChangedAt invalidates an older JWT", async () => {
+test("password change version invalidates an older JWT", async () => {
   const login = await request(app).post("/api/auth/login").send({
     email: "customer@getclaim.in",
     password: "Customer@123",
@@ -110,7 +110,7 @@ test("passwordChangedAt invalidates an older JWT", async () => {
   assert.equal(login.status, 200);
   await User.updateOne(
     { email: "customer@getclaim.in" },
-    { passwordChangedAt: new Date(Date.now() + 1000) },
+    { $inc: { authVersion: 1 }, $set: { passwordChangedAt: new Date() } },
   );
   const response = await request(app)
     .get("/api/auth/me")
@@ -134,4 +134,42 @@ test("five failed logins lock a known account without disclosing the lock", asyn
   });
   assert.equal(locked.status, 401);
   assert.equal(locked.body.message, "Email or password is incorrect.");
+});
+
+test("browser session uses HttpOnly cookie and rejects writes without a matching CSRF token", async () => {
+  const browser = request.agent(app);
+  const login = await browser.post("/api/auth/login").send({ email: "customer@getclaim.in", password: "Customer@123" });
+  assert.equal(login.status, 200);
+  const issued = login.headers["set-cookie"];
+  assert.ok(issued.some(value => value.startsWith("getclaim-session=") && value.includes("HttpOnly")));
+  const csrf = issued.find(value => value.startsWith("getclaim-csrf="))?.match(/^getclaim-csrf=([^;]+)/)?.[1];
+  assert.match(csrf, /^[a-f0-9]{64}$/);
+  assert.equal((await browser.get("/api/auth/me")).status, 200);
+  assert.equal((await browser.post("/api/auth/logout")).status, 403);
+  assert.equal((await browser.post("/api/auth/logout").set("X-CSRF-Token", "0".repeat(64))).status, 403);
+  assert.equal((await browser.post("/api/auth/logout").set("X-CSRF-Token", csrf)).status, 200);
+  assert.equal((await browser.get("/api/auth/me")).status, 401);
+  const oldCookies = issued.map(value => value.split(";")[0]).join("; ");
+  assert.equal((await request(app).get("/api/auth/me").set("Cookie", oldCookies)).status, 401);
+});
+
+test("staff must complete an emailed second factor before a session is issued", async () => {
+  process.env.REQUIRE_STAFF_MFA = "true";
+  try {
+    const browser = request.agent(app);
+    const login = await browser.post("/api/auth/login").send({ email: "admin@getclaim.in", password: "Admin@123" });
+    assert.equal(login.status, 200);
+    assert.equal(login.body.mfaRequired, true);
+    assert.equal(login.body.token, undefined);
+    assert.equal(login.headers["set-cookie"], undefined);
+    assert.equal((await browser.get("/api/auth/me")).status, 401);
+    const code = messages.at(-1).text.match(/security code is (\d{8})/i)?.[1];
+    assert.match(code, /^\d{8}$/);
+    const wrong = await browser.post("/api/auth/complete-mfa").send({ challengeId: login.body.challengeId, code: "99999999" === code ? "88888888" : "99999999" });
+    assert.equal(wrong.status, 401);
+    const complete = await browser.post("/api/auth/complete-mfa").send({ challengeId: login.body.challengeId, code });
+    assert.equal(complete.status, 200);
+    assert.equal((await browser.get("/api/auth/me")).status, 200);
+    assert.equal((await browser.post("/api/auth/complete-mfa").send({ challengeId: login.body.challengeId, code })).status, 401);
+  } finally { delete process.env.REQUIRE_STAFF_MFA; }
 });

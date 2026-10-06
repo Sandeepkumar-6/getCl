@@ -56,6 +56,9 @@ const DEMO = [["Policyholder", "customer", "Customer"], ["Surveyor", "surveyor",
 
 export default function Auth({ register: signup = false }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [challenge, setChallenge] = useState(null);
+  const [code, setCode] = useState("");
+  const [checkingCode, setCheckingCode] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { authenticate } = useAuth();
@@ -75,11 +78,26 @@ export default function Auth({ register: signup = false }) {
   const submit = async (data) => {
     try {
       const account = await authenticate(signup ? "register" : "login", data);
+      if (account.mfaRequired) {
+        setChallenge(account.challengeId);
+        return;
+      }
       toast.success(signup ? "Account created. Check your email for the verification link." : `Signed in as ${account.name}.`);
       navigate(account.mustChangePassword ? "/change-password" : from && from.startsWith("/portal") ? from : "/portal", { replace: true });
     } catch (e) {
       toast.error(errorMessage(e));
     }
+  };
+  const completeMfa = async (event) => {
+    event.preventDefault();
+    setCheckingCode(true);
+    try {
+      const account = await authenticate("complete-mfa", { challengeId: challenge, code });
+      toast.success(`Signed in as ${account.name}.`);
+      navigate(account.mustChangePassword ? "/change-password" : from && from.startsWith("/portal") ? from : "/portal", { replace: true });
+    } catch (error) {
+      toast.error(errorMessage(error));
+    } finally { setCheckingCode(false); }
   };
   return (
     <div className={cx("gc-auth", signup && "gc-auth--register")}>
@@ -104,12 +122,22 @@ export default function Auth({ register: signup = false }) {
           </div>
           <section className="gc-auth-card" aria-labelledby="auth-title">
             <header className="gc-auth-card-head">
-              <h1 id="auth-title">{signup ? "Create your account" : "Sign in"}</h1>
+              <h1 id="auth-title">{challenge ? "Check your email" : signup ? "Create your account" : "Sign in"}</h1>
+              {challenge ? <p className="gc-note">Enter the 8-digit security code we sent to your email. It expires in 5 minutes.</p> : null}
+              {!challenge && <>
               <p className="gc-auth-switch">
                 {signup ? <>Already have an account? <Link className="gc-link" to="/login" state={location.state}>Sign in</Link></> : <>New to getClaim? <Link className="gc-link" to="/register" state={location.state}>Create an account</Link></>}
               </p>
               {from && !signup && <p className="gc-note">Sign in to continue to the page you asked for.</p>}
+              </>}
             </header>
+            {challenge ? (
+              <form className="gc-form gc-auth-form" onSubmit={completeMfa}>
+                <Field label="Security code"><input type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{8}" maxLength={8} value={code} onChange={event => setCode(event.target.value.replace(/\D/g, ""))} required /></Field>
+                <button className="gc-btn gc-btn--lg gc-btn--block" type="submit" disabled={checkingCode || code.length !== 8}>{checkingCode ? "Checking…" : "Continue securely"}</button>
+                <button className="gc-text-button" type="button" onClick={() => { setChallenge(null); setCode(""); }}>Back to sign in</button>
+              </form>
+            ) : (
             <form className="gc-form gc-auth-form" onSubmit={handleSubmit(submit)} noValidate>
               {signup && <Field label="Full name" error={errors.name?.message}><input autoComplete="name" {...register("name")} /></Field>}
               <Field label="Email address" error={errors.email?.message}><input type="email" autoComplete="email" inputMode="email" placeholder="name@example.in" {...register("email")} /></Field>
@@ -125,6 +153,7 @@ export default function Auth({ register: signup = false }) {
                 {isSubmitting ? (signup ? "Creating account…" : "Signing in…") : signup ? "Create account" : "Sign in"}
               </button>
             </form>
+            )}
             <div className="gc-auth-alt">
               <p className="gc-note">Insurance surveyor? <Link className="gc-link" to="/surveyor-apply">Apply for surveyor access</Link></p>
               {!signup && import.meta.env.DEV && (

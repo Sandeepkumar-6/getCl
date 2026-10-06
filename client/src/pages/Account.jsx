@@ -224,6 +224,20 @@ export function ClaimResources({ inspections = false, payments = false }) {
   return <ClaimResourceList inspections={inspections} />;
 }
 
+function ClaimResourceItem({ claim, to, role, note }) {
+  return (
+    <li>
+      <Link to={to}>
+        <span className="gc-claim-id"><span className="gc-ref">{claim.claimNumber}</span><span className="gc-claim-veh"><Plate registration={claim.vehicle?.registrationNumber} type={plateType(claim.vehicle)} />{claim.vehicle?.manufacturer} {claim.vehicle?.model}</span></span>
+        <StatusChip status={claim.status} role={role} />
+        <span className="gc-note">{note}</span>
+        <span className="gc-note">{dateShort(claim.updatedAt || claim.createdAt)}</span>
+        <ArrowRight className="gc-icon" aria-hidden="true" />
+      </Link>
+    </li>
+  );
+}
+
 // Claims from approval onwards: where payouts and payment records appear. The list API takes one status, so each stage is fetched and merged.
 const PAYOUT_STATUSES = ["APPROVED", "ON_ACCOUNT_PAYMENT", "REPAIR_IN_PROGRESS", "READY_FOR_DELIVERY", "SETTLED"];
 function Payments() {
@@ -249,15 +263,7 @@ function Payments() {
           <div className="gc-card-head"><div><h2 id="payouts-title">Approved claims</h2><p>{inProgress} in progress · {state.items.length - inProgress} settled</p></div></div>
           <ul className="gc-resource-list">
             {state.items.map((c) => (
-              <li key={c._id}>
-                <Link to={`/portal/claims/${c._id}?tab=decision`}>
-                  <span className="gc-claim-id"><span className="gc-ref">{c.claimNumber}</span><span className="gc-claim-veh"><Plate registration={c.vehicle?.registrationNumber} type={plateType(c.vehicle)} />{c.vehicle?.manufacturer} {c.vehicle?.model}</span></span>
-                  <StatusChip status={c.status} />
-                  <span className="gc-note">{nextStepText(c.status)}</span>
-                  <span className="gc-note">{dateShort(c.updatedAt || c.createdAt)}</span>
-                  <ArrowRight className="gc-icon" aria-hidden="true" />
-                </Link>
-              </li>
+              <ClaimResourceItem key={c._id} claim={c} to={`/portal/claims/${c._id}?tab=decision`} note={nextStepText(c.status)} />
             ))}
           </ul>
           {state.more && <p className="gc-note gc-resource-foot">Showing the latest claims at each stage. <Link to="/portal/claims">See every claim</Link></p>}
@@ -289,21 +295,14 @@ function ClaimResourceList({ inspections }) {
     <>
       <PageHeader
         title={title}
+        visual={inspections ? "technical" : "documents"}
         description={inspections ? "Claims with a surveyor assigned. Open one to book, submit or review its inspection." : "Documents are kept with each claim. Open a claim to upload, download or check them."}
       />
       {r.loading ? <Loading /> : r.error && !r.data ? <ErrorState message={r.error} retry={r.reload} /> : rows.length ? (
         <section className="gc-card gc-card--flush" aria-label={title}>
           <ul className="gc-resource-list">
             {rows.map((c) => (
-              <li key={c._id}>
-                <Link to={`/portal/claims/${c._id}`}>
-                  <span className="gc-claim-id"><span className="gc-ref">{c.claimNumber}</span><span className="gc-claim-veh"><Plate registration={c.vehicle?.registrationNumber} type={plateType(c.vehicle)} />{c.vehicle?.manufacturer} {c.vehicle?.model}</span></span>
-                  <StatusChip status={c.status} role={user.role} />
-                  <span className="gc-note">{inspections ? `Surveyor: ${c.assignedSurveyor?.name}` : user.role === "POLICYHOLDER" ? nextStepText(c.status) : c.policyholder?.name}</span>
-                  <span className="gc-note">{dateShort(c.updatedAt || c.createdAt)}</span>
-                  <ArrowRight className="gc-icon" aria-hidden="true" />
-                </Link>
-              </li>
+              <ClaimResourceItem key={c._id} claim={c} to={`/portal/claims/${c._id}`} role={user.role} note={inspections ? `Surveyor: ${c.assignedSurveyor?.name}` : user.role === "POLICYHOLDER" ? nextStepText(c.status) : c.policyholder?.name} />
             ))}
           </ul>
           <Pagination data={r.data} noun="claims" onPage={setPage} />

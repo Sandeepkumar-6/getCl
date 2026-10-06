@@ -160,7 +160,7 @@ export function InfoPage({ page }) {
 }
 
 export const FAQS = [
-  ["Can I save an unfinished claim?", "Yes. The form keeps your answers on this device as you type. Once you’ve chosen a vehicle and policy, the claim is also saved to your account as a draft. Files you picked but didn’t upload need to be chosen again after a refresh; uploaded files stay with the claim."],
+  ["Can I save an unfinished claim?", "Yes. Once you’ve chosen a vehicle and policy, save the claim to your account as a draft. Files you picked but didn’t upload need to be chosen again after a refresh; uploaded files stay with the claim."],
   ["What does the document checklist mean?", "It shows which details and documents are still missing for your kind of claim. It isn’t a prediction of approval, a fraud score or a trust score."],
   ["Who can see my documents?", "You, the surveyor assigned to your claim and the claims team. Other policyholders can’t see your claims, vehicles or documents."],
   ["Can I use an expired policy?", "You can keep an expired policy in your account, but you can’t claim against it. The accident date must fall inside the policy period."],
@@ -185,7 +185,7 @@ export function FAQ() {
         <Mail className="gc-icon" aria-hidden="true" />
         <div>
           <h2 id="faq-more">Still have a question?</h2>
-          <p className="gc-body-text">Email <a className="gc-link" href="mailto:support@getclaim.in">support@getclaim.in</a> with your claim number if you have one.</p>
+          <p className="gc-body-text">Email <a className="gc-link" href="mailto:getclaimedhelp@gmail.com">getclaimedhelp@gmail.com</a> with your claim number if you have one.</p>
         </div>
         <Link className="gc-btn gc-btn--secondary" to="/contact">Contact us</Link>
       </section>
@@ -202,7 +202,7 @@ export function Contact() {
         <section className="gc-card gc-info-card">
           <Mail className="gc-icon" aria-hidden="true" />
           <h2>Account and claims</h2>
-          <p><a className="gc-link" href="mailto:support@getclaim.in">support@getclaim.in</a></p>
+          <p><a className="gc-link" href="mailto:getclaimedhelp@gmail.com">getclaimedhelp@gmail.com</a></p>
           <p className="gc-note">Include your claim number, such as GC-2026-01043.</p>
         </section>
         <section className="gc-card gc-info-card">

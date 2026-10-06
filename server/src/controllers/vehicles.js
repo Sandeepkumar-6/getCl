@@ -19,6 +19,10 @@ import {
 import { notifyUsers } from "../services/notifications.js";
 
 const withStatus = presentPolicy;
+const requestVerification = (item, status) => {
+  item.verificationStatus = status;
+  item.verificationReason = undefined;
+};
 export async function listVehicles(req, res) {
   const result = await paginate(Vehicle.find(
       ["ADMIN", "SUPER_ADMIN"].includes(req.user.role)
@@ -97,8 +101,7 @@ export async function updateVehicle(req, res) {
   if (req.body.currentOdometer !== undefined)
     assert(req.body.currentOdometer >= (item.currentOdometer || 0), 422, "Mileage cannot be lower than the current reading.");
   Object.assign(item, req.body);
-  item.verificationStatus = "USER_ADDED";
-  item.verificationReason = undefined;
+  requestVerification(item, "USER_ADDED");
   await item.save();
   await notifyUsers({ recipients: [req.user._id], title: "Vehicle details updated", message: `${item.registrationNumber}: vehicle details were updated.`, category: "VEHICLE", deepLink: `/portal/vehicles/${item._id}` });
   res.json(item);
@@ -151,8 +154,7 @@ export async function updatePolicy(req, res) {
   );
   await validatePolicyVehicle(req.body, req.user);
   Object.assign(item, req.body);
-  item.verificationStatus = "USER_ADDED";
-  item.verificationReason = undefined;
+  requestVerification(item, "USER_ADDED");
   await item.save();
   await notifyUsers({ recipients: [req.user._id], title: "Insurance policy updated", message: `${item.policyNumber}: policy details were updated and require verification.`, category: "VEHICLE", deepLink: "/portal/insurance" });
   res.json(withStatus(item));
@@ -169,8 +171,7 @@ export async function uploadPolicyDocument(req, res) {
   const item = await ownedPolicy(req.params.id, req.user);
   const previous = item.document?.toObject?.() || item.document;
   item.document = await persist(req.file);
-  item.verificationStatus = "PENDING_VERIFICATION";
-  item.verificationReason = undefined;
+  requestVerification(item, "PENDING_VERIFICATION");
   await item.save();
   if (previous && previous.storedName !== item.document.storedName)
     await removeStoredFile(previous);

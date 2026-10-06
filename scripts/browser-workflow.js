@@ -13,8 +13,9 @@ page.on("pageerror", (error) => errors.push(error.message));
 
 async function logIn(role) {
   await page.goto(`${baseURL}/login`);
+  await page.getByText("Use a demo account", { exact: true }).click();
   await page.getByRole("button", { name: role, exact: true }).click();
-  await page.getByRole("button", { name: "Log in to your workspace" }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page.waitForURL("**/portal");
 }
 

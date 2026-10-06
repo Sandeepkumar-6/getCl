@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { assert } from "../utils/errors.js";
 import { deleteObject, putObject, sendObject } from "../services/storage.js";
+import { scanUpload } from "../services/scan.js";
 export const uploadDir = fileURLToPath(
   new URL("../../uploads/", import.meta.url),
 );
@@ -60,6 +61,7 @@ export async function persist(file) {
     422,
     "File contents do not match a supported image or PDF format.",
   );
+  await scanUpload(b);
   const storedName = crypto.randomUUID() + ext;
   const storage = await putObject({ key: storedName, body: b, contentType: mime, localDir: uploadDir });
   return {

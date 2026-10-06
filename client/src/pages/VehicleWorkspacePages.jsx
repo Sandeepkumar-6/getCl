@@ -14,11 +14,11 @@ import { activeClaims, currentPolicy, vehicleReminders } from "../utils/vehicleW
 import { dateShort, label } from "../utils/format";
 import VehicleCare from "./VehicleCare";
 
-function WorkspacePage({ title, description, action, children }) {
+function WorkspacePage({ title, description, action, children, visual }) {
   const workspace = useVehicleWorkspace();
   return (
     <>
-      <PageHeader title={title} description={description} action={workspace.selected && action?.(workspace.selected)} />
+      <PageHeader visual={visual} title={title} description={description} action={workspace.selected && action?.(workspace.selected)} />
       <VehicleWorkspaceGate workspace={workspace}>
         <VehicleSwitcher workspace={workspace} />
         {workspace.selected && <div key={workspace.selected._id} className="gc-stack-lg">{children(workspace.selected)}</div>}
@@ -28,11 +28,11 @@ function WorkspacePage({ title, description, action, children }) {
 }
 
 export function PrimaryVehiclePage() {
-  return <WorkspacePage title="Your vehicle" description="Service records, checks, documents, reminders and claims.">{(vehicle) => <VehicleCare vehicleId={vehicle._id} embedded />}</WorkspacePage>;
+  return <WorkspacePage visual="vehicle" title="Your vehicle" description="Service records, checks, documents, reminders and claims.">{(vehicle) => <VehicleCare vehicleId={vehicle._id} embedded />}</WorkspacePage>;
 }
 
 export function PolicyOverviewPage() {
-  return <WorkspacePage title="Policies" description="Cover, renewal dates and policy files for the vehicle you choose.">{(vehicle) => <PolicyContent vehicle={vehicle} />}</WorkspacePage>;
+  return <WorkspacePage visual="shield" title="Policies" description="Cover, renewal dates and policy files for the vehicle you choose.">{(vehicle) => <PolicyContent vehicle={vehicle} />}</WorkspacePage>;
 }
 
 function PolicyContent({ vehicle }) {
@@ -65,7 +65,7 @@ function PolicyContent({ vehicle }) {
         const open = activeClaims(linked).length;
         return (
           <div className="gc-stack" key={policy._id}>
-            <div className="gc-grid-2">
+            <div className="gc-grid-2 gc-context-policy-layout">
               <PolicySummary policy={policy} vehicle={vehicle} full />
               <section className="gc-card" aria-labelledby={`policy-claims-${policy._id}`}>
                 <div className="gc-card-head">
@@ -102,6 +102,7 @@ function PolicyContent({ vehicle }) {
 export function VehicleDocumentsPage() {
   return (
     <WorkspacePage
+      visual="documents"
       title="Documents"
       description="Policy files, vehicle papers, service invoices and claim documents for the vehicle you choose."
       action={(vehicle) => <Link className="gc-btn gc-btn--secondary" to={`/portal/vehicles/${vehicle._id}?action=document#documents`}><Upload className="gc-icon" aria-hidden="true" />Upload a vehicle document</Link>}
@@ -131,7 +132,7 @@ function DocumentContent({ vehicle }) {
   const count = (c) => (c === "All" ? documents.length : documents.filter((d) => d.category === c).length);
   const groups = groupDocuments(filtered, result.data.claims);
   return (
-    <section className="gc-card" aria-label="Documents">
+    <section className="gc-card gc-context-document-library" aria-label="Documents">
       <div className="gc-segmented" role="group" aria-label="Show documents of type">
         {CATEGORIES.map((value) => <button type="button" className={cx(category === value && "is-active")} aria-pressed={category === value} onClick={() => setCategory(value)} key={value}>{value} <span className="gc-note">{count(value)}</span></button>)}
       </div>
@@ -161,6 +162,7 @@ function DocumentContent({ vehicle }) {
 export function VehicleRemindersPage() {
   return (
     <WorkspacePage
+      visual="time"
       title="Reminders"
       description="Saved reminders and dates that come from your policy and service records."
       action={(vehicle) => <Link className="gc-btn gc-btn--secondary" to={`/portal/vehicles/${vehicle._id}?action=reminder#reminders`}><Plus className="gc-icon" aria-hidden="true" />Add a reminder</Link>}
@@ -177,7 +179,7 @@ function ReminderContent({ vehicle }) {
   const reminders = vehicleReminders(result.data);
   const completed = result.data.reminders.filter((r) => ["COMPLETED", "DISMISSED"].includes(r.status));
   return (
-    <section className="gc-card" aria-label="Reminders">
+    <section className="gc-card gc-context-reminder-list" aria-label="Reminders">
       <p className="gc-note">{reminders.length} to do for {vehicle.manufacturer} {vehicle.model}</p>
       <ReminderList reminders={reminders} vehicle={vehicle} onChange={result.reload} />
       {completed.length > 0 && (

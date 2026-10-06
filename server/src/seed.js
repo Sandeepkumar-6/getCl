@@ -4,16 +4,19 @@ import bcrypt from "bcryptjs";
 import { fileURLToPath } from "node:url";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { connectDB } from "./config/db.js";
+import { connectDB, disconnectDB } from "./config/db.js";
 import * as M from "./models/index.js";
 import { transitions } from "./services/claims.js";
 export async function seed() {
+  if (process.env.NODE_ENV === "production")
+    throw new Error("Demo seed is disabled in production.");
   const allowed =
     mongoose.connection.name === "getclaim_db" ||
     /^getclaim_[a-z0-9_]*test$/i.test(mongoose.connection.name);
   if (!allowed)
     throw new Error("Seed is restricted to getclaim_db or an isolated getclaim_*test database.");
   for (const name of [
+    "RevokedSession",
     "AuditLog",
     "Payment",
     "Settlement",
@@ -419,6 +422,6 @@ if (
     console.error("Seed failed:", e.message);
     process.exitCode = 1;
   } finally {
-    await mongoose.disconnect();
+    await disconnectDB();
   }
 }

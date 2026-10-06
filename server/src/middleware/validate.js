@@ -5,11 +5,19 @@ export const validate = (schema) => (req, res, next) => {
 };
 const text = z.string().trim().max(5000);
 const money = z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
+const phone = z.string().regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number");
+const email = z.string().email().toLowerCase();
+const staffId = text.min(3).max(50).transform((value) => value.toUpperCase());
+const strongPassword = z.string()
+  .min(10, "Use at least 10 characters")
+  .max(72)
+  .regex(/[A-Z]/, "Include an uppercase letter")
+  .regex(/[a-z]/, "Include a lowercase letter")
+  .regex(/\d/, "Include a number")
+  .regex(/[^A-Za-z0-9]/, "Include a special character");
 export const profile = z.object({
   name: text.min(2),
-  phone: z
-    .string()
-    .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number"),
+  phone,
   address: text.optional(),
   city: text.optional(),
   state: text.optional(),
@@ -20,40 +28,27 @@ export const profile = z.object({
     .optional(),
 });
 export const registration = profile.extend({
-  email: z.string().email().toLowerCase(),
-  password: z.string().min(10, "Use at least 10 characters").max(72)
-    .regex(/[A-Z]/, "Include an uppercase letter")
-    .regex(/[a-z]/, "Include a lowercase letter")
-    .regex(/\d/, "Include a number")
-    .regex(/[^A-Za-z0-9]/, "Include a special character"),
+  email,
+  password: strongPassword,
 });
 export const login = z.object({
-  email: z.string().email().toLowerCase(),
+  email,
   password: z.string().min(1).max(72),
 });
-export const emailOnly = z.object({ email: z.string().email().toLowerCase() });
+export const completeMfa = z.object({
+  challengeId: z.string().regex(/^[a-f0-9]{64}$/),
+  code: z.string().regex(/^\d{8}$/, "Enter the 8-digit security code"),
+});
+export const emailOnly = z.object({ email });
 export const tokenOnly = z.object({ token: z.string().min(40).max(200) });
-const strongPassword = z
-  .string()
-  .min(10, "Use at least 10 characters")
-  .max(72)
-  .regex(/[A-Z]/, "Include an uppercase letter")
-  .regex(/[a-z]/, "Include a lowercase letter")
-  .regex(/\d/, "Include a number")
-  .regex(/[^A-Za-z0-9]/, "Include a special character");
 export const surveyorApplication = z
   .object({
     name: text.min(2),
-    email: z.string().email().toLowerCase(),
-    phone: z
-      .string()
-      .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number"),
+    email,
+    phone,
     password: strongPassword,
     confirmPassword: z.string(),
-    surveyorId: text
-      .min(3)
-      .max(50)
-      .transform((v) => v.toUpperCase()),
+    surveyorId: staffId,
     qualification: text.min(2),
     experience: z.coerce.number().int().min(0).max(70),
     surveyorRegion: text.min(2),
@@ -65,14 +60,9 @@ export const surveyorApplication = z
   });
 export const createAdmin = z.object({
   name: text.min(2),
-  email: z.string().email().toLowerCase(),
-  phone: z
-    .string()
-    .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number"),
-  employeeId: text
-    .min(3)
-    .max(50)
-    .transform((v) => v.toUpperCase()),
+  email,
+  phone,
+  employeeId: staffId,
   temporaryPassword: strongPassword,
 });
 export const changePassword = z

@@ -6,17 +6,17 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null),
     [loading, setLoading] = useState(true);
   const logout = () => {
-    localStorage.removeItem("getclaim-token");
     setUser(null);
+    api.post("/auth/logout").catch(() => {});
   };
   useEffect(() => {
-    if (localStorage.getItem("getclaim-token"))
-      api
-        .get("/auth/me")
-        .then((r) => setUser(r.data))
-        .catch(() => logout())
-        .finally(() => setLoading(false));
-    else setLoading(false);
+    // Remove credentials and claim details left by older local-storage releases.
+    localStorage.removeItem("getclaim-token");
+    Object.keys(localStorage).filter(key => key.startsWith("getclaim-draft-")).forEach(key => localStorage.removeItem(key));
+    api.get("/auth/me")
+      .then((r) => setUser(r.data))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
     const expired = () => {
       logout();
       toast.info("You were signed out. Sign in to continue where you left off.", { id: "session-expired" });
@@ -24,23 +24,9 @@ export function AuthProvider({ children }) {
     window.addEventListener("session-expired", expired);
     return () => window.removeEventListener("session-expired", expired);
   }, []);
-  useEffect(() => {
-    const token = localStorage.getItem("getclaim-token");
-    if (!token) return;
-    try {
-      const expiry = JSON.parse(atob(token.split(".")[1])).exp * 1000;
-      const timer = setTimeout(() => {
-        logout();
-        toast.info("You were signed out after a period of inactivity. Sign in to continue where you left off.", { id: "session-expired" });
-      }, Math.max(0, expiry - Date.now()));
-      return () => clearTimeout(timer);
-    } catch {
-      logout();
-    }
-  }, [user]);
   const authenticate = async (path, data) => {
     const r = await api.post(`/auth/${path}`, data);
-    localStorage.setItem("getclaim-token", r.data.token);
+    if (r.data.mfaRequired) return r.data;
     setUser(r.data.user);
     return r.data.user;
   };

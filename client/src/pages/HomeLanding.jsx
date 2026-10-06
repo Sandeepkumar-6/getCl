@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight, CalendarClock, Check, ClipboardCheck, FilePlus2, FileText, FolderOpen, IndianRupee, LineChart,
@@ -51,6 +51,33 @@ const QUESTIONS = [
   ["What if my claim is rejected?", faq("What if my claim is rejected?")],
 ];
 
+const STORY = [
+  { label: "Report", number: "01", title: "Start with what happened.", copy: "Add the vehicle, describe the incident and save a draft if you need a break.", note: "A calm start, even on a difficult day.", icon: FilePlus2 },
+  { label: "Follow", number: "02", title: "See the next move.", copy: "Your claim shows its current stage, the person handling it and anything they need from you.", note: "No guessing where things stand.", icon: LineChart },
+  { label: "Resolve", number: "03", title: "Understand the decision.", copy: "Review the reason and settlement breakdown in the same place as your claim history.", note: "Clarity all the way through.", icon: ClipboardCheck },
+];
+
+function ClaimStory() {
+  const [active, setActive] = useState(0);
+  const moment = STORY[active];
+  const Icon = moment.icon;
+  return (
+    <div className="gc-next-story">
+      <div className="gc-next-story-tabs" aria-label="Explore the claim journey">
+        {STORY.map((item, i) => <button type="button" key={item.label} className={i === active ? "is-active" : ""} aria-pressed={i === active} onClick={() => setActive(i)}><span>{item.number}</span>{item.label}</button>)}
+      </div>
+      <div className="gc-next-story-stage" aria-live="polite">
+        <div className="gc-next-story-icon"><Icon aria-hidden="true" /></div>
+        <p className="gc-next-kicker">{moment.note}</p>
+        <h3>{moment.title}</h3>
+        <p>{moment.copy}</p>
+        <div className="gc-next-story-line" aria-hidden="true"><span style={{ width: `${(active + 1) * 33.333}%` }} /></div>
+        <span className="gc-next-story-count">{moment.number} / 03</span>
+      </div>
+    </div>
+  );
+}
+
 // Sections fade up once as they scroll into view. Content stays visible without
 // JavaScript and when the person prefers reduced motion.
 function useReveal() {
@@ -78,18 +105,29 @@ function SectionHead({ eyebrow, title, id, children, center }) {
   );
 }
 
+function AudienceCard({ Icon, title, text, to, cta }) {
+  return (
+    <article className="gc-lp-card">
+      <span className="gc-lp-icon"><Icon className="gc-icon" aria-hidden="true" /></span>
+      <h3>{title}</h3>
+      <p>{text}</p>
+      {to && <Link className="gc-lp-more" to={to}>{cta} <ArrowRight className="gc-icon" aria-hidden="true" /></Link>}
+    </article>
+  );
+}
+
 export default function HomeLanding() {
   const { user } = useAuth();
   const ref = useReveal();
   return (
-    <div className="gc-lp" ref={ref}>
-      <section className="gc-lp-hero" aria-labelledby="hero-title">
+    <div className="gc-lp gc-next-home" ref={ref}>
+      <section className="gc-lp-hero gc-next-hero" aria-labelledby="hero-title">
         <img className="gc-lp-hero-photo" src={assets.hero.highway} alt="" width="1920" height="768" fetchPriority="high" />
         <div className="gc-lp-hero-inner">
           <div className="gc-lp-hero-copy">
-            <p className="gc-lp-eyebrow">Vehicle insurance claims, made simple</p>
-            <h1 id="hero-title">Know where your <span>claim stands.</span></h1>
-            <p className="gc-lp-lead">File a vehicle insurance claim, follow it through every stage, and always see what happens next, who is handling it and by when.</p>
+            <p className="gc-lp-eyebrow">The road ahead, made clearer</p>
+            <h1 id="hero-title">Know your car.<br /><span>Know your next move.</span></h1>
+            <p className="gc-lp-lead">Your vehicle, its papers and every claim in one clear place. When something happens, you’ll know what to do next.</p>
             <div className="gc-actions">
               <Link className="gc-btn gc-btn--lg" to="/portal/claims/new">File a claim <ArrowRight className="gc-icon" aria-hidden="true" /></Link>
               {user
@@ -97,7 +135,7 @@ export default function HomeLanding() {
                 : <Link className="gc-btn gc-btn--lg gc-btn--secondary" to="/how-it-works">How it works</Link>}
             </div>
             <ul className="gc-lp-pills">
-              {["Simple process", "Transparent updates", "Upload documents online"].map((p) => (
+              {["Your vehicle in one place", "A clear next step", "Updates you can follow"].map((p) => (
                 <li key={p}><Check className="gc-icon" aria-hidden="true" />{p}</li>
               ))}
             </ul>
@@ -107,7 +145,7 @@ export default function HomeLanding() {
       </section>
 
       <div className="gc-lp-wrap">
-        <ul className="gc-lp-features gc-reveal" aria-label="What getClaim does">
+        <ul className="gc-lp-features gc-next-proof gc-reveal" aria-label="What getClaim does">
           {FEATURES.map(([Icon, title, text]) => (
             <li key={title}>
               <span className="gc-lp-icon"><Icon className="gc-icon" aria-hidden="true" /></span>
@@ -117,26 +155,18 @@ export default function HomeLanding() {
         </ul>
       </div>
 
-      <section className="gc-lp-section gc-reveal" aria-labelledby="how-title">
-        <SectionHead eyebrow="A simple, transparent process" title="How it works" id="how-title" center>
-          From the first report to the settlement, every claim follows the same path.
+      <section className="gc-lp-section gc-next-journey gc-reveal" aria-labelledby="how-title">
+        <SectionHead eyebrow="A claim you can follow" title="From what happened to what’s next." id="how-title">
+          One place to report, follow and understand your claim.
         </SectionHead>
-        <ol className="gc-lp-steps">
-          {STEPS.map(([Icon, title, text], i) => (
-            <li key={title}>
-              <span className="gc-lp-step-icon"><Icon className="gc-icon" aria-hidden="true" /><span className="gc-lp-step-n" aria-hidden="true">{i + 1}</span></span>
-              <h3>{title}</h3>
-              <p>{text}</p>
-            </li>
-          ))}
-        </ol>
+        <ClaimStory />
       </section>
 
-      <section className="gc-lp-section gc-reveal" aria-labelledby="why-title">
+      <section className="gc-lp-section gc-next-vehicle gc-reveal" aria-labelledby="why-title">
         <div className="gc-lp-split">
           <div className="gc-lp-split-copy">
-            <SectionHead eyebrow="Why getClaim" title="We make vehicle insurance claims simple, transparent and hassle-free." id="why-title">
-              One account for the claim, the vehicle and its papers, with the same five stages on every screen.
+            <SectionHead eyebrow="Built around your vehicle" title="A home for everything that keeps you moving." id="why-title">
+              See policy details, documents, service records and reminders alongside your claims.
             </SectionHead>
             <dl className="gc-lp-figures">
               {FIGURES.map(([value, label]) => (
@@ -146,7 +176,7 @@ export default function HomeLanding() {
           </div>
           <figure className="gc-lp-split-photo">
             <img src={assets.hero.sunset} alt="" width="1100" height="679" loading="lazy" />
-            <figcaption>Wherever the road goes, your claim stays on track.</figcaption>
+            <figcaption>For the journey between claims, too.</figcaption>
           </figure>
         </div>
       </section>
@@ -157,12 +187,7 @@ export default function HomeLanding() {
         </SectionHead>
         <div className="gc-lp-cards gc-lp-cards--3">
           {AUDIENCES.map(([Icon, title, text, to, cta]) => (
-            <article className="gc-lp-card" key={title}>
-              <span className="gc-lp-icon"><Icon className="gc-icon" aria-hidden="true" /></span>
-              <h3>{title}</h3>
-              <p>{text}</p>
-              <Link className="gc-lp-more" to={to}>{cta} <ArrowRight className="gc-icon" aria-hidden="true" /></Link>
-            </article>
+            <AudienceCard key={title} Icon={Icon} title={title} text={text} to={to} cta={cta} />
           ))}
         </div>
       </section>
@@ -180,11 +205,7 @@ export default function HomeLanding() {
         </SectionHead>
         <div className="gc-lp-cards gc-lp-cards--3">
           {KEEP.map(([Icon, title, text]) => (
-            <article className="gc-lp-card" key={title}>
-              <span className="gc-lp-icon"><Icon className="gc-icon" aria-hidden="true" /></span>
-              <h3>{title}</h3>
-              <p>{text}</p>
-            </article>
+            <AudienceCard key={title} Icon={Icon} title={title} text={text} />
           ))}
         </div>
       </section>

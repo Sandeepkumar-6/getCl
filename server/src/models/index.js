@@ -1,4 +1,5 @@
 ﻿import mongoose from "mongoose";
+import { statuses } from "../../../shared/claimStatuses.js";
 const { Schema } = mongoose;
 const ref = (model, required = true) => ({
   type: Schema.Types.ObjectId,
@@ -12,25 +13,15 @@ const str = (required = false) => ({
   maxlength: 5000,
 });
 const money = { type: Number, min: 0, default: 0, validate: Number.isSafeInteger };
-export const statuses = [
-  "DRAFT",
-  "SUBMITTED",
-  "UNDER_REVIEW",
-  "MORE_INFORMATION_REQUIRED",
-  "SURVEYOR_ASSIGNED",
-  "INSPECTION_SCHEDULED",
-  "INSPECTION_COMPLETED",
-  "ESTIMATE_SUBMITTED",
-  "SUPPLEMENTARY_ESTIMATE",
-  "ON_ACCOUNT_PAYMENT",
-  "REPAIR_IN_PROGRESS",
-  "READY_FOR_DELIVERY",
-  "TOTAL_LOSS",
-  "APPROVED",
-  "REJECTED",
-  "APPEALED",
-  "SETTLED",
-];
+const storedFileFields = () => ({
+  originalName: str(true),
+  storedName: str(true),
+  storageProvider: { type: String, default: "local" },
+  storageKey: String,
+  mimeType: str(true),
+  fileSize: { type: Number, max: 8388608 },
+});
+export { statuses };
 const model = (name, shape, indexes = []) => {
   const s = new Schema(shape, {
     timestamps: true,
@@ -93,6 +84,7 @@ export const User = model("User", {
   rejectionReason: str(),
   mustChangePassword: { type: Boolean, default: false },
   passwordChangedAt: Date,
+  authVersion: { type: Number, default: 0 },
   emailVerifiedAt: Date,
   emailVerificationTokenHash: { type: String, select: false },
   emailVerificationExpiresAt: { type: Date, select: false },
@@ -100,9 +92,18 @@ export const User = model("User", {
   passwordResetExpiresAt: { type: Date, select: false },
   loginFailedAttempts: { type: Number, default: 0, select: false },
   loginLockedUntil: { type: Date, select: false },
+  mfaChallengeHash: { type: String, select: false },
+  mfaCodeHash: { type: String, select: false },
+  mfaExpiresAt: { type: Date, select: false },
+  mfaIssuedAt: { type: Date, select: false },
+  mfaAttempts: { type: Number, default: 0, select: false },
   approvedBy: ref("User", false),
   approvedAt: Date,
 });
+export const RevokedSession = model("RevokedSession", {
+  tokenHash: { type: String, required: true, unique: true },
+  expiresAt: { type: Date, required: true },
+}, [{ expiresAt: 1, expireAfterSeconds: 0 }]);
 export const Vehicle = model("Vehicle", {
   owner: ref("User"),
   registrationNumber: {
@@ -241,12 +242,7 @@ export const ClaimDocument = model("ClaimDocument", {
   claim: ref("Claim"),
   uploadedBy: ref("User"),
   documentType: str(true),
-  originalName: str(true),
-  storedName: str(true),
-  storageProvider: { type: String, default: "local" },
-  storageKey: String,
-  mimeType: str(true),
-  fileSize: { type: Number, max: 8388608 },
+  ...storedFileFields(),
   verificationStatus: {
     type: String,
     enum: ["PENDING", "ACCEPTED", "REJECTED"],
@@ -424,10 +420,5 @@ export const VehicleDocument = model("VehicleDocument", {
   },
   title: str(true),
   expiryDate: Date,
-  originalName: str(true),
-  storedName: str(true),
-  storageProvider: { type: String, default: "local" },
-  storageKey: String,
-  mimeType: str(true),
-  fileSize: { type: Number, max: 8388608 },
+  ...storedFileFields(),
 }, [{ vehicle: 1, documentType: 1 }, { owner: 1, expiryDate: 1 }]);

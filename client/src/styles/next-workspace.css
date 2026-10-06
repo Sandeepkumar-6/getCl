@@ -1,0 +1,106 @@
+/* The customer journey and staff workspace share structure, with different emphasis. */
+.gc-shell .gc-side a[aria-current="page"] { background: #176e68; color: #fff; }
+.gc-shell .gc-card:not(.gc-card--flush) { border-radius: 16px; }
+.gc-shell .gc-empty { border-color: #d6e2dc; border-radius: 14px; }
+.gc-shell .gc-tab[aria-selected="true"] { border-bottom-color: #1b8474; }
+.gc-shell .gc-tab:hover { background: #edf6f0; }
+.gc-shell .gc-segmented button.is-active { background: #176e68; border-color: #176e68; color: #fff; }
+.gc-shell .gc-segmented button.is-active .gc-note { color: #fff; }
+.gc-shell .gc-table thead { background: #eaf3ee; }
+.gc-shell .gc-table tbody tr:hover { background: #f2f8f4; }
+.gc-shell .gc-progress > span { background: #1b8474; transition: width .4s ease; }
+.gc-main > .gc-page-head { position: relative; overflow: hidden; padding: clamp(25px, 3vw, 38px); border-radius: 17px; background: linear-gradient(105deg, #e7f2ed 0%, #f3f8f5 70%); border: 1px solid #d7e8df; }
+.gc-main > .gc-page-head::after { content: ""; position: absolute; width: 230px; height: 230px; border-radius: 50%; border: 1px solid #b8d9c9; right: -84px; top: -160px; pointer-events: none; }
+.gc-main > .gc-page-head h1 { font-size: clamp(30px, 3.2vw, 43px); line-height: 1.08; letter-spacing: -.035em; color: #103a43; }
+.gc-main > .gc-page-head p { max-width: 66ch; color: #466462; }
+.gc-main > .gc-empty { min-height: 230px; padding: clamp(30px, 4vw, 46px); border: 1px solid #cbded3; background: radial-gradient(circle at 90% 5%, #e0f1e7, transparent 37%), #fff; }
+.gc-main > .gc-empty > .gc-icon { width: 41px; height: 41px; color: #187568; }
+.gc-main > .gc-stack-lg > .gc-page-head { position: relative; overflow: hidden; padding: clamp(25px, 3vw, 38px); border-radius: 17px; background: linear-gradient(105deg, #e7f2ed 0%, #f3f8f5 70%); border: 1px solid #d7e8df; }
+.gc-main > .gc-stack-lg > .gc-page-head::after { content: ""; position: absolute; width: 230px; height: 230px; border-radius: 50%; border: 1px solid #b8d9c9; right: -84px; top: -160px; pointer-events: none; }
+.gc-main > .gc-stack-lg > .gc-page-head h1 { font-size: clamp(30px, 3.2vw, 43px); line-height: 1.08; letter-spacing: -.035em; color: #103a43; }
+.gc-next-claim-form, .gc-next-claims, .gc-next-vehicles { display: flex; flex-direction: column; gap: 26px; }
+.gc-next-claim-form > .gc-page-head, .gc-next-claims > .gc-page-head, .gc-next-vehicles > .gc-page-head, .gc-page-head:has(+ .gc-claim-layout) { position: relative; overflow: hidden; padding: clamp(25px, 3vw, 38px); border-radius: 17px; background: linear-gradient(105deg, #e7f2ed 0%, #f3f8f5 70%); border: 1px solid #d7e8df; }
+.gc-next-claim-form > .gc-page-head::after, .gc-next-claims > .gc-page-head::after, .gc-next-vehicles > .gc-page-head::after, .gc-page-head:has(+ .gc-claim-layout)::after { content: ""; position: absolute; width: 230px; height: 230px; border-radius: 50%; border: 1px solid #b8d9c9; right: -84px; top: -160px; pointer-events: none; }
+.gc-next-claim-form > .gc-page-head h1, .gc-next-claims > .gc-page-head h1, .gc-next-vehicles > .gc-page-head h1, .gc-page-head:has(+ .gc-claim-layout) h1 { font-size: clamp(30px, 3.2vw, 43px); line-height: 1.08; letter-spacing: -.035em; color: #103a43; }
+.gc-next-claim-form > .gc-page-head p, .gc-next-claims > .gc-page-head p, .gc-next-vehicles > .gc-page-head p, .gc-page-head:has(+ .gc-claim-layout) p { max-width: 66ch; color: #466462; }
+
+/* Filing: the current decision reads like one clear chapter. */
+.gc-next-claim-form .gc-steps { gap: 8px; }
+.gc-next-claim-form .gc-steps button { border-radius: 12px; border-color: #d6e4dc; min-height: 60px; transition: background .2s, border-color .2s, transform .2s; }
+.gc-next-claim-form .gc-steps .is-current button { background: #0b3a42; color: #fff; border-color: #0b3a42; box-shadow: 0 10px 25px rgba(13,65,68,.15); }
+.gc-next-claim-form .gc-steps .is-current .gc-steps-mark { background: #d0ece0; color: #0a4c48; box-shadow: none; }
+.gc-next-claim-form .gc-steps .is-complete .gc-steps-mark { background: #197467; }
+.gc-next-claim-form .gc-steps .is-complete button { border-color: #a9d2c0; }
+.gc-next-claim-form .gc-steps .is-complete button:hover { transform: translateY(-2px); }
+.gc-next-claim-form .gc-step-card { border: 1px solid #d6e6dd; border-radius: 18px; padding: clamp(24px, 3vw, 39px); box-shadow: 0 16px 42px rgba(17,62,62,.05); }
+.gc-next-claim-form .gc-step-card > .gc-eyebrow { color: #1a7468; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; font-size: 11px; }
+.gc-next-claim-form .gc-step-card > h2 { font: 750 clamp(27px, 2.5vw, 36px)/1.12 var(--font-display); letter-spacing: -.03em; color: #103b43; margin: -7px 0 4px; }
+.gc-next-claim-form .gc-step-card .gc-form { gap: 23px; }
+.gc-next-claim-form .gc-step-card .gc-field:focus-within .gc-field-label { color: #116f63; }
+.gc-next-claim-form .gc-form-nav { border-color: #d4e5dc; background: rgba(248,252,249,.96); }
+.gc-next-claim-form .gc-checklist-card, .gc-next-claim-form .gc-help-card { border-color: #d9e6df; border-radius: 17px; }
+.gc-next-claim-form .gc-checklist-card .gc-progress > span { background: #148070; transition: width .4s ease; }
+.gc-next-claim-form .gc-help-card > .gc-icon { width: 41px; height: 41px; padding: 10px; color: #176f67; background: #e2f2e9; border-radius: 12px; }
+.gc-next-claim-form .gc-choice:has(input:checked) { border-color: #429b86; background: #f1faf4; box-shadow: 0 0 0 2px rgba(66,155,134,.12); }
+
+/* Claim detail: lead with the next action and make progress legible. */
+.gc-claim-layout { gap: 27px; }
+.gc-claim-layout .gc-next { border-radius: 15px; border: 1px solid #d8e5dd; padding: clamp(20px, 2.5vw, 28px); }
+.gc-claim-layout .gc-next--action { border-color: #e7d7b1; background: linear-gradient(100deg, #fff9e8, #fffdf7); }
+.gc-claim-layout .gc-next--done { border-color: #bddfcd; background: #f2faf4; }
+.gc-claim-layout .gc-next h3 { font: 700 clamp(19px, 2vw, 23px)/1.2 var(--font-display); letter-spacing: -.02em; }
+.gc-claim-layout .gc-next-icon { border-radius: 12px; width: 45px; height: 45px; }
+.gc-claim-layout .gc-journey-wrap { padding: 12px 5px 5px; }
+.gc-claim-layout .gc-journey .is-current .gc-step-mark { animation: gc-next-step-arrive .6s ease-out both; }
+.gc-claim-layout .gc-journey .is-complete .gc-step-mark { background: #187c6f; }
+.gc-claim-layout .gc-glance { border-color: #d7e6dd; border-radius: 17px; box-shadow: 0 14px 38px rgba(16,59,67,.06); }
+.gc-claim-layout .gc-progress > span { transition: width .45s ease; }
+
+/* Vehicle ownership: photos carry the hierarchy, policy detail stays readable. */
+.gc-next-vehicles .gc-vehicle-tile { border-color: #d8e5dc; border-radius: 18px; padding: clamp(18px, 2vw, 27px); box-shadow: 0 14px 36px rgba(18,67,65,.05); transition: transform .25s, box-shadow .25s; }
+.gc-next-vehicles .gc-vehicle-tile:hover { transform: translateY(-3px); box-shadow: 0 23px 48px rgba(18,67,65,.12); }
+.gc-next-vehicles .gc-vehicle-tile .gc-vehicle-img { height: 238px; border-radius: 13px; background: #e9f2ec; }
+.gc-next-vehicles .gc-vehicle-tile .gc-vehicle-img:not(.is-photo) { background: #f7f9f6; }
+.gc-next-vehicles .gc-vehicle-tile .gc-vehicle-img:not(.is-photo) img { mix-blend-mode: multiply; }
+.gc-next-vehicles .gc-vehicle-tile-head h2 { font: 750 clamp(23px, 2.3vw, 29px)/1.1 var(--font-display); letter-spacing: -.025em; color: #103b43; }
+.gc-next-vehicles .gc-vehicle-tile-section { border-color: #d8e5dc; }
+.gc-next-vehicles .gc-vehicle-tile-foot { border-color: #d8e5dc; }
+.gc-next-vehicles > .gc-empty { min-height: 255px; border: 1px solid #c9ded4; border-radius: 17px; padding: clamp(30px, 4vw, 48px); background: radial-gradient(circle at 92% 10%, #d6ede1, transparent 40%), #fff; }
+.gc-next-vehicles > .gc-empty > .gc-icon { width: 42px; height: 42px; color: #187568; }
+.gc-next-vehicles .gc-add-tile { border-radius: 17px; border-color: #93c4ad; background: #f1faf4; }
+
+/* Claims index and staff priorities: scan first, inspect second. */
+.gc-next-claims .gc-filters { border: 1px solid #d9e6df; border-radius: 16px; background: #fff; }
+.gc-next-claims .gc-claims { border-radius: 16px; border-color: #d8e5dc; }
+.gc-next-claims .gc-claims-head { background: #eaf3ee; }
+.gc-next-claims .gc-claim-row { transition: background .18s ease; }
+.gc-next-claims .gc-claim-row:hover { background: #eef8f2; }
+.gc-next-claims .gc-empty { border-color: #d4e4da; border-radius: 16px; background: #fff; }
+.gc-queue a { border-radius: 14px; border-color: #d7e2dc; transition: transform .2s, box-shadow .2s; }
+.gc-queue a:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(19,56,66,.09); }
+.gc-queue a.is-critical { background: #fff7f4; border-color: #eacfc8; }
+.gc-queue a.is-action { background: #fffaf0; border-color: #e8ddbf; }
+.gc-kpi { border-radius: 15px; border-color: #d7e3de; padding: clamp(18px, 2vw, 26px); box-shadow: 0 10px 27px rgba(17,57,67,.04); }
+.gc-kpi-icon { background: #e0efe8; color: #176c61; border-radius: 10px; width: 38px; height: 38px; }
+.gc-kpi-value { font-size: clamp(31px, 2.7vw, 41px); line-height: 1.05; letter-spacing: -.035em; }
+.gc-kpi-meter > span { background: #1c8977; transition: width .45s ease; }
+.gc-dtable-card { border-radius: 17px; overflow: hidden; }
+.gc-dtable thead { background: #eaf3ee; }
+.gc-dtable tbody tr:hover { background: #f2f8f4; }
+
+@keyframes gc-next-step-arrive { from { transform: scale(.77); opacity: .55; } to { transform: scale(1); opacity: 1; } }
+@media (max-width: 767px) {
+  .gc-next-claim-form, .gc-next-claims, .gc-next-vehicles { gap: 20px; }
+  .gc-next-claim-form > .gc-page-head, .gc-next-claims > .gc-page-head, .gc-next-vehicles > .gc-page-head, .gc-page-head:has(+ .gc-claim-layout) { padding: 25px 20px; }
+  .gc-next-claim-form .gc-steps button { min-height: 48px; }
+  .gc-next-claim-form .gc-step-card { padding: 23px 18px; }
+  .gc-next-vehicles .gc-vehicle-tile .gc-vehicle-img { height: 186px; }
+  .gc-main > .gc-page-head { padding: 25px 20px; }
+  .gc-main > .gc-stack-lg > .gc-page-head { padding: 25px 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gc-next-claim-form .gc-steps button, .gc-next-claim-form .gc-checklist-card .gc-progress > span, .gc-claim-layout .gc-progress > span, .gc-next-vehicles .gc-vehicle-tile, .gc-queue a, .gc-kpi-meter > span, .gc-next-claims .gc-claim-row { transition: none; }
+  .gc-next-claim-form .gc-steps .is-complete button:hover, .gc-next-vehicles .gc-vehicle-tile:hover, .gc-queue a:hover { transform: none; }
+  .gc-claim-layout .gc-journey .is-current .gc-step-mark { animation: none; }
+  .gc-shell .gc-progress > span { transition: none; }
+}

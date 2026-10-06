@@ -21,17 +21,17 @@ async function check(path) {
 try {
   await fs.mkdir(".local/screenshots", { recursive: true });
   await page.goto(origin + "/login");
+  await page.getByText("Use a demo account", { exact: true }).click();
   await page.getByRole("button", { name: "Policyholder", exact: true }).click();
-  await page.getByRole("button", { name: "Log in to your workspace" }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page.waitForURL("**/portal");
   await page.waitForLoadState("networkidle");
-  const token = await page.evaluate(() => localStorage.getItem("getclaim-token"));
-  const response = await page.request.get(origin + "/api/vehicles?includePolicies=true", { headers: { Authorization: `Bearer ${token}` } });
+  const response = await page.request.get(origin + "/api/vehicles?includePolicies=true");
   assert.equal(response.status(), 200);
   const vehicles = await response.json();
   assert.ok(vehicles.length > 1, "Live multiple-vehicle account");
   const vehicle = vehicles[0];
-  const careResponse = await page.request.get(`${origin}/api/vehicles/${vehicle._id}/care`, { headers: { Authorization: `Bearer ${token}` } });
+  const careResponse = await page.request.get(`${origin}/api/vehicles/${vehicle._id}/care`);
   assert.equal(careResponse.status(), 200);
   const care = await careResponse.json();
   await page.getByLabel("Viewing vehicle").selectOption(vehicles[1]._id);

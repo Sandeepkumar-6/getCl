@@ -18,7 +18,6 @@ if not exist node_modules\vite (
  )
 )
 node scripts\init-env.js
-node scripts\check-db.js
 if errorlevel 1 (
  pause
  exit /b 1

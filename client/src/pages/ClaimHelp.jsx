@@ -49,7 +49,7 @@ export default function ClaimHelp() {
 
   return (
     <>
-      <PageHeader title="Help" description="What to do after an accident, whether a claim is worth it, and how to reach us." />
+      <PageHeader visual="network" title="Help" description="What to do after an accident, whether a claim is worth it, and how to reach us." />
       <Alert tone="warning" title="In an emergency, call 112">getClaim can’t send police, fire or medical help.</Alert>
       <div className="gc-grid-2">
         <AccidentChecklist />
@@ -84,7 +84,7 @@ export default function ClaimHelp() {
         <section className="gc-card" aria-labelledby="contact-title">
           <div className="gc-card-head"><h2 id="contact-title">Contact us</h2></div>
           <div className="gc-rows">
-            <div className="gc-row-item"><Mail className="gc-icon" aria-hidden="true" /><div><a className="gc-link" href="mailto:support@getclaim.in">support@getclaim.in</a><span className="gc-note">Include your claim number so we can find it quickly.</span></div></div>
+            <div className="gc-row-item"><Mail className="gc-icon" aria-hidden="true" /><div><a className="gc-link" href="mailto:getclaimedhelp@gmail.com">getclaimedhelp@gmail.com</a><span className="gc-note">Include your claim number so we can find it quickly.</span></div></div>
             <div className="gc-row-item"><FileText className="gc-icon" aria-hidden="true" /><div><Link className="gc-link" to="/required-documents">What documents you need</Link><span className="gc-note">By claim type: damage, theft and third party.</span></div></div>
             <div className="gc-row-item"><CircleHelp className="gc-icon" aria-hidden="true" /><div><Link className="gc-link" to="/faq">Common questions</Link><span className="gc-note">Payouts, rejections, appeals and more.</span></div></div>
           </div>

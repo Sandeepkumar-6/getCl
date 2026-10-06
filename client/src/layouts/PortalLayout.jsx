@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { Alert, Loading, Logo, cx } from "../components/UI";
 import { api } from "../services/api";
 import { initials, label } from "../utils/format";
+import SidebarArtwork, { sidebarDesign } from "../components/SidebarArtwork";
 
 const PortalContext = createContext({ setCrumb: () => {} });
 // Pages call this to name the last breadcrumb, e.g. with a claim number.
@@ -162,7 +163,7 @@ export default function PortalLayout() {
     <PortalContext.Provider value={context}>
       <div className="gc-shell">
         <a className="gc-skip" href="#main">Skip to main content</a>
-        <aside ref={sidebar} id="portal-navigation" className={cx("gc-side", open && "is-open")} aria-label="Main">
+        <aside ref={sidebar} id="portal-navigation" className={cx("gc-side", `gc-side--${sidebarDesign}`, open && "is-open")} aria-label="Main">
           <div className="gc-side-top">
             <Logo inverse to="/portal" />
             <button type="button" className="gc-side-close gc-btn gc-btn--icon" aria-label="Close menu" onClick={() => { setOpen(false); menuButton.current?.focus(); }}><X className="gc-icon" aria-hidden="true" /></button>
@@ -177,6 +178,7 @@ export default function PortalLayout() {
               );
             })}
           </nav>
+          <SidebarArtwork />
           <button type="button" className="gc-side-signout" onClick={signOut}><LogOut className="gc-icon" aria-hidden="true" />Sign out</button>
         </aside>
         {open && <div className="gc-scrim-layer" aria-hidden="true" onClick={() => { setOpen(false); menuButton.current?.focus(); }} />}

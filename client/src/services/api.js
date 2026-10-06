@@ -1,18 +1,17 @@
 import axios from "axios";
 export const api = axios.create({ baseURL: "/api", timeout: 15000 });
+const csrfToken = () => document.cookie.split(";").map(part => part.trim()).find(part => part.startsWith("getclaim-csrf=") || part.startsWith("__Host-getclaim-csrf="))?.split("=")[1];
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("getclaim-token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (!["get", "head", "options"].includes((config.method || "get").toLowerCase())) {
+    const token = csrfToken();
+    if (token) config.headers["X-CSRF-Token"] = token;
+  }
   return config;
 });
 api.interceptors.response.use(
   (r) => r,
   (error) => {
-    if (
-      error.response?.status === 401 &&
-      localStorage.getItem("getclaim-token")
-    ) {
-      localStorage.removeItem("getclaim-token");
+    if (error.response?.status === 401 && !error.config?.url?.startsWith("/auth/")) {
       window.dispatchEvent(new Event("session-expired"));
     }
     return Promise.reject(error);

@@ -21,7 +21,6 @@ export default function ChangePassword() {
     if (data.newPassword !== data.confirmPassword) return toast.error("The two new passwords don’t match. Type the same password twice.");
     try {
       const r = await api.post("/auth/change-password", data);
-      localStorage.setItem("getclaim-token", r.data.token);
       setUser(r.data.user);
       toast.success("Password changed.");
       navigate(forced ? "/portal" : "/portal/profile");

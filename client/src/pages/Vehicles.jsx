@@ -34,8 +34,9 @@ export default function Vehicles() {
   const items = vehicles.data.items || [];
   const openForm = (next) => { setForm(next); requestAnimationFrame(() => document.getElementById("vehicle-form")?.scrollIntoView({ behavior: "smooth", block: "start" })); };
   return (
-    <>
+    <div className="gc-next-vehicles">
       <PageHeader
+        visual="vehicle"
         title="Vehicles"
         description="Each vehicle with its policies. Open a vehicle for service records, checks and documents."
         action={!form && items.length > 0 && <button type="button" className="gc-btn" onClick={() => openForm({ type: "vehicle", record: {} })}><Plus className="gc-icon" aria-hidden="true" />Add a vehicle</button>}
@@ -112,6 +113,6 @@ export default function Vehicles() {
         </div>
       )}
       <Pagination data={vehicles.data} noun="vehicles" onPage={setPage} />
-    </>
+    </div>
   );
 }

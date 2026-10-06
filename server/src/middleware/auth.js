@@ -1,10 +1,12 @@
 import jwt from "jsonwebtoken";
-import { User } from "../models/index.js";
+import { User, RevokedSession } from "../models/index.js";
+import crypto from "node:crypto";
 import { assert } from "../utils/errors.js";
 import { hasPermission } from "../config/permissions.js";
+import { readSession, validCsrf } from "./session.js";
 
 export async function auth(req, res, next) {
-  const token = req.headers.authorization?.split(" ")[1];
+  const { token, fromCookie, csrf } = readSession(req);
   assert(token, 401, "Please log in to continue.");
   let decoded;
   try {
@@ -16,11 +18,17 @@ export async function auth(req, res, next) {
       "Your session expired or is invalid. Please log in again.",
     );
   }
+  if (fromCookie && !["GET", "HEAD", "OPTIONS"].includes(req.method))
+    assert(validCsrf(req, decoded, req.get("x-csrf-token"), csrf), 403, "Your session security check failed. Refresh and try again.");
+  if (fromCookie) {
+    assert(decoded.jti, 401, "Please sign in again.");
+    assert(!(await RevokedSession.exists({ tokenHash: crypto.createHash("sha256").update(decoded.jti).digest("hex") })), 401, "This session has ended. Sign in again.");
+  }
+  req.sessionJwt = decoded;
   req.user = await User.findById(decoded.id);
   assert(req.user, 401, "This account no longer exists.");
-  const passwordChangedAt = req.user.passwordChangedAt?.getTime() / 1000;
   assert(
-    !passwordChangedAt || passwordChangedAt <= decoded.iat,
+    (decoded.v ?? 0) === (req.user.authVersion || 0),
     401,
     "Your password changed after this session began. Please log in again.",
   );

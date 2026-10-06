@@ -25,6 +25,13 @@ const audit = (actor, target, action, previousValue, newValue, note) =>
     note,
   });
 
+async function manageableStaff(id, actor, selfMessage) {
+  const user = await User.findById(id);
+  assert(user && ["SURVEYOR", "ADMIN"].includes(user.role), 404, "Staff account not found.");
+  assert(String(user._id) !== String(actor._id), 409, selfMessage);
+  return user;
+}
+
 export async function listSurveyors(req, res) {
   const query = { role: "SURVEYOR" };
   if (req.query.status) query.status = String(req.query.status);
@@ -107,17 +114,7 @@ export async function createAdmin(req, res) {
 }
 
 export async function changeStaffStatus(req, res) {
-  const user = await User.findById(req.params.id);
-  assert(
-    user && ["SURVEYOR", "ADMIN"].includes(user.role),
-    404,
-    "Staff account not found.",
-  );
-  assert(
-    String(user._id) !== String(req.user._id),
-    409,
-    "You cannot change your own account status.",
-  );
+  const user = await manageableStaff(req.params.id, req.user, "You cannot change your own account status.");
   if (req.user.role === "ADMIN")
     assert(
       user.role === "SURVEYOR",
@@ -149,21 +146,12 @@ export async function changeStaffStatus(req, res) {
 }
 
 export async function resetStaffPassword(req, res) {
-  const user = await User.findById(req.params.id);
-  assert(
-    user && ["SURVEYOR", "ADMIN"].includes(user.role),
-    404,
-    "Staff account not found.",
-  );
-  assert(
-    String(user._id) !== String(req.user._id),
-    409,
-    "Use change password for your own account.",
-  );
+  const user = await manageableStaff(req.params.id, req.user, "Use change password for your own account.");
   const temporaryPassword = `Gc!${crypto.randomBytes(6).toString("hex")}A1`;
   user.password = await bcrypt.hash(temporaryPassword, 12);
   user.mustChangePassword = true;
   user.passwordChangedAt = new Date();
+  user.authVersion = (user.authVersion || 0) + 1;
   await user.save();
   await audit(
     req.user,

@@ -9,6 +9,9 @@ import "./styles/tokens.css";
 import "./styles/components.css";
 import "./styles/base.css";
 import "./styles/pages.css";
+import "./styles/next-home.css";
+import "./styles/next-workspace.css";
+import "./styles/contextual.css";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ErrorBoundary>

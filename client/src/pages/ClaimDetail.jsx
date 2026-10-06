@@ -152,7 +152,7 @@ export default function ClaimDetail({ initialTab = "summary" }) {
                 ["Cover", `${c.policy?.coverageType || "—"} · ${date(c.policy?.startDate)} to ${date(c.policy?.expiryDate)}`],
                 staff && ["Policyholder", <>{c.policyholder?.name}<small>{[c.policyholder?.email, phone(c.policyholder?.phone)].filter(Boolean).join(" · ")}</small></>],
                 ["Surveyor", c.assignedSurveyor ? <>{c.assignedSurveyor.name}<small>{[c.assignedSurveyor.email, phone(c.assignedSurveyor.phone)].filter(Boolean).join(" · ")}</small></> : workflow.requiresSurvey ? "Assigned after review" : "Not needed for this claim"],
-                ["Claims team", <>getClaim claims team<small>support@getclaim.in</small></>],
+                ["Claims team", <>getClaim claims team<small>getclaimedhelp@gmail.com</small></>],
               ]} />
             </section>
           </div>
@@ -263,6 +263,7 @@ export default function ClaimDetail({ initialTab = "summary" }) {
   return (
     <>
       <PageHeader
+        visual="claims"
         title={`Claim ${c.claimNumber}`}
         meta={<>
           <StatusChip status={c.status} role={role} />

@@ -1,16 +1,18 @@
 import { chromium } from "@playwright/test";
 import fs from "node:fs/promises";
 import assert from "node:assert/strict";
+const baseURL = process.env.BROWSER_TEST_URL || "http://localhost:5173";
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 const context = await browser.newContext({
   viewport: { width: 1440, height: 1000 },
 });
 const page = await context.newPage(),
   errors = [];
+page.setDefaultTimeout(15000);
 page.on("pageerror", (e) => errors.push(e.message));
 await fs.mkdir(".local/screenshots", { recursive: true });
 async function check(path) {
-  await page.goto("http://localhost:5173" + path);
+  await page.goto(baseURL + path);
   await page.waitForLoadState("networkidle");
   assert.ok(
     (await page.locator("main").innerText()).length > 50,
@@ -45,7 +47,7 @@ try {
     "/not-a-page",
   ])
     await check(path);
-  await page.goto("http://localhost:5173/");
+  await page.goto(baseURL + "/");
   await page.screenshot({
     path: ".local/screenshots/home-desktop.png",
     fullPage: true,
@@ -54,12 +56,13 @@ try {
     ["customer", "Policyholder"],
     ["surveyor", "Surveyor"],
     ["admin", "Admin"],
-    ["superadmin", "Super Admin"],
+    ["superadmin", "Super admin"],
   ]) {
-    await page.goto("http://localhost:5173/login");
+    await page.goto(baseURL + "/login");
+    await page.getByText("Use a demo account", { exact: true }).click();
     await page.getByRole("button", { name, exact: true }).click();
     await page
-      .getByRole("button", { name: "Log in to your workspace" })
+      .getByRole("button", { name: "Sign in", exact: true })
       .click();
     await page.waitForURL("**/portal");
     await page.waitForLoadState("networkidle");
@@ -84,25 +87,25 @@ try {
     ])
       await check(route);
     if (role === "customer") {
-      await page.goto("http://localhost:5173/portal/vehicles");
-      await page.getByRole("link", { name: "Vehicle care" }).first().click();
+      await page.goto(baseURL + "/portal/vehicles");
+      await page.getByRole("link", { name: "Service and history" }).first().click();
       await page.waitForLoadState("networkidle");
       assert.equal(await page.locator("[data-load-error]").count(), 0);
       assert.ok(page.url().includes("/portal/vehicles/"));
     }
-    await page.goto("http://localhost:5173/portal/claims");
+    await page.goto(baseURL + "/portal/claims");
     await page.waitForLoadState("networkidle");
-    await page.locator(".claim-link").first().click();
+    await page.locator(".gc-claim-row").first().click();
     await page.waitForLoadState("networkidle");
     for (const tab of [
-      "Overview",
-      "Evidence",
-      "Inspection",
-      "Decision & appeal",
-      "Timeline",
+      "Summary",
+      "Documents",
+      "Survey",
+      "Decision and payout",
+      "History",
     ]) {
       await page
-        .getByRole("button", { name: tab, exact: tab !== "Evidence" })
+        .getByRole("tab", { name: tab, exact: tab !== "Documents" })
         .click();
       assert.equal(await page.locator("[data-load-error]").count(), 0);
     }
@@ -115,21 +118,21 @@ try {
     await page.setViewportSize({ width: 390, height: 844 });
     for (const route of ["/portal", "/portal/claims", "/portal/profile"])
       await check(route);
-    await page.goto("http://localhost:5173/portal");
+    await page.goto(baseURL + "/portal");
     await page.waitForLoadState("networkidle");
     await page.screenshot({
       path: `.local/screenshots/${role}-mobile.png`,
       fullPage: true,
     });
-    await page.getByRole("button", { name: "Toggle sidebar" }).click();
-    await page.getByRole("button", { name: "Log out", exact: true }).click();
+    await page.getByRole("button", { name: "Open menu", exact: true }).click();
+    await page.getByRole("button", { name: "Sign out", exact: true }).click();
     await page.waitForURL("**/login");
     await page.setViewportSize({ width: 1440, height: 1000 });
   }
   await page.setViewportSize({ width: 390, height: 844 });
   for (const route of ["/", "/login", "/register", "/required-documents"])
     await check(route);
-  await page.goto("http://localhost:5173/");
+  await page.goto(baseURL + "/");
   await page.screenshot({
     path: ".local/screenshots/home-mobile.png",
     fullPage: true,

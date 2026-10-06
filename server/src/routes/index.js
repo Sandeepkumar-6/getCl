@@ -17,6 +17,7 @@ const publicAuthLimit = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30 });
 
 router.post("/auth/register", publicAuthLimit, V.validate(V.registration), A.register);
 router.post("/auth/login", publicAuthLimit, V.validate(V.login), A.login);
+router.post("/auth/complete-mfa", rateLimit({ windowMs: 15 * 60 * 1000, limit: 15 }), V.validate(V.completeMfa), A.completeMfa);
 router.post(
   "/auth/forgot-password",
   publicAuthLimit,
@@ -50,6 +51,7 @@ router.post(
 );
 
 router.use(auth);
+router.post("/auth/logout", A.logout);
 router.get("/auth/me", A.me);
 router.post("/auth/change-password", V.validate(V.changePassword), A.changePassword);
 router.patch("/auth/me", V.validate(V.profile), A.updateProfile);

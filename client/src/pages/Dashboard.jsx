@@ -135,6 +135,7 @@ function StaffDashboard() {
   const queueLabel = isSurveyor ? "Your assignments" : "Claim queue";
   const header = (
     <PageHeader
+      visual="technical"
       title={greeting(user.name)}
       description={user.role === "SUPER_ADMIN" ? "Claims, people and activity across getClaim." : isAdmin ? "Queues that need the claims team, then everything else." : "Inspections and reports assigned to you."}
       action={<Link className="gc-btn" to="/portal/claims">{`Open ${queueLabel.toLowerCase()}`} <ArrowRight className="gc-icon" aria-hidden="true" /></Link>}

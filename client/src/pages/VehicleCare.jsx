@@ -75,24 +75,23 @@ export default function VehicleCare({ vehicleId, embedded = false }) {
     } catch (error) { toast.error(errorMessage(error)); }
     finally { setBusy(false); }
   };
-  const updateMileage = async (event) => {
+  const saveSimpleForm = async (event, save, success) => {
     event.preventDefault();
     setBusy(true);
     try {
-      await api.patch(`/vehicles/${id}/odometer`, { currentOdometer: Number(new FormData(event.currentTarget).get("currentOdometer")) });
-      toast.success("Odometer updated."); closeForm(); result.reload();
+      await save(new FormData(event.currentTarget));
+      toast.success(success);
+      closeForm();
+      result.reload();
     } catch (error) { toast.error(errorMessage(error)); }
     finally { setBusy(false); }
   };
-  const uploadDocument = async (event) => {
-    event.preventDefault();
-    setBusy(true);
-    try {
-      await api.post(`/vehicles/${id}/documents`, new FormData(event.currentTarget));
-      toast.success("Document uploaded."); closeForm(); result.reload();
-    } catch (error) { toast.error(errorMessage(error)); }
-    finally { setBusy(false); }
-  };
+  const updateMileage = (event) => saveSimpleForm(event,
+    (data) => api.patch(`/vehicles/${id}/odometer`, { currentOdometer: Number(data.get("currentOdometer")) }),
+    "Odometer updated.");
+  const uploadDocument = (event) => saveSimpleForm(event,
+    (data) => api.post(`/vehicles/${id}/documents`, data),
+    "Document uploaded.");
   const deleteDocument = async (documentId) => {
     try { await api.delete(`/vehicles/${id}/documents/${documentId}`); toast.success("Document removed."); result.reload(); }
     catch (error) { toast.error(errorMessage(error)); throw error; }
@@ -105,6 +104,7 @@ export default function VehicleCare({ vehicleId, embedded = false }) {
     <div className="gc-stack-lg">
       {!embedded && (
         <PageHeader
+          visual="vehicle"
           title={`${vehicle.manufacturer} ${vehicle.model}`}
           meta={<><Plate registration={vehicle.registrationNumber} type={plateType(vehicle)} /><StatusChip status={vehicle.verificationStatus || "USER_ADDED"} kind="vehicle" /></>}
           description="Service records, checks, documents, reminders and claims for this vehicle."

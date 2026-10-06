@@ -1,0 +1,49 @@
+# Free API hosting. External database, email, private storage and scanner are required.
+# Do not apply the root render.yaml when choosing this free hosting path.
+services:
+  - type: web
+    name: getclaim-api
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci --omit=dev --workspace=server
+    startCommand: node server/src/server.js
+    healthCheckPath: /api/health
+    autoDeployTrigger: off
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 24
+      - key: MONGOMS_DISABLE_POSTINSTALL
+        value: '1'
+      - key: JWT_SECRET
+        sync: false
+      - key: CLIENT_URL
+        value: https://getclaim-design-preview.vercel.app
+      - key: MONGO_URI
+        sync: false
+      - key: TRUST_PROXY_HOPS
+        value: '1'
+      - key: EMAIL_TRANSPORT
+        value: resend
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: STORAGE_DRIVER
+        value: s3
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: CLAMAV_HOST
+        sync: false
+      - key: CLAMAV_PORT
+        value: '3310'

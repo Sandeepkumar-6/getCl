@@ -62,8 +62,9 @@ export default function Claims() {
   // Nothing to filter yet: skip the filter bar and let the empty state explain the next step.
   const nothingYet = data && data.total === 0 && !chips.length;
   return (
-    <>
+    <div className={staff ? "gc-next-claims gc-next-claims--staff" : "gc-next-claims"}>
       <PageHeader
+        visual="claims"
         title={title}
         description={staff ? "Newest first. Open a claim to see its deadline and the actions available to you." : "Every claim you’ve filed, newest first. Claims that need you say so in amber."}
         action={!staff && <Link className="gc-btn" to={`/portal/claims/new${params.get("vehicleId") ? `?vehicleId=${encodeURIComponent(params.get("vehicleId"))}` : ""}`}><Plus className="gc-icon" aria-hidden="true" />File a claim</Link>}
@@ -139,6 +140,6 @@ export default function Claims() {
           <Stages level={3} />
         </section>
       )}
-    </>
+    </div>
   );
 }

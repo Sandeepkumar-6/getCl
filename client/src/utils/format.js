@@ -1,4 +1,5 @@
 // Display formats from the design system's "Words and formats" guide.
+export { statuses } from "../../../shared/claimStatuses.js";
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const valid = (value) => {
   if (!value) return null;
@@ -82,25 +83,6 @@ export const initials = (name) =>
     .join("")
     .toUpperCase();
 
-export const statuses = [
-  "DRAFT",
-  "SUBMITTED",
-  "UNDER_REVIEW",
-  "MORE_INFORMATION_REQUIRED",
-  "SURVEYOR_ASSIGNED",
-  "INSPECTION_SCHEDULED",
-  "INSPECTION_COMPLETED",
-  "ESTIMATE_SUBMITTED",
-  "SUPPLEMENTARY_ESTIMATE",
-  "ON_ACCOUNT_PAYMENT",
-  "REPAIR_IN_PROGRESS",
-  "READY_FOR_DELIVERY",
-  "TOTAL_LOSS",
-  "APPROVED",
-  "REJECTED",
-  "APPEALED",
-  "SETTLED",
-];
 export const documentTypes = [
   "Front damage photograph",
   "Rear damage photograph",

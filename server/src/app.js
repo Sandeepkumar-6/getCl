@@ -18,10 +18,11 @@ app.use(cors({
     callback(null, !origin || allowedOrigins.includes(origin));
   },
   methods: ["GET", "POST", "PATCH", "DELETE"],
-  allowedHeaders: ["Authorization", "Content-Type", "X-Request-Id"],
+  allowedHeaders: ["Authorization", "Content-Type", "X-Request-Id", "X-CSRF-Token"],
   maxAge: 86400,
 }));
 app.use(express.json({ limit: "100kb" }));
+app.use("/api", (req, res, next) => { res.set("Cache-Control", "no-store"); next(); });
 app.use((req, res, next) => {
   const supplied = req.get("x-request-id");
   req.id = supplied && /^[A-Za-z0-9._-]{1,100}$/.test(supplied) ? supplied : crypto.randomUUID();

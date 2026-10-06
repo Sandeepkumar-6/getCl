@@ -5,7 +5,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Check, ChevronRight, LifeBuoy, Pencil, Plus, Save } from "lucide-react";
 import { toast } from "sonner";
-import { useAuth } from "../context/AuthContext";
 import { useApi } from "../hooks/useApi";
 import { api, errorMessage } from "../services/api";
 import { Alert, Checkbox, Empty, ErrorState, Facts, Field, Loading, PageHeader, Plate, Reason, StatusChip, cx, plateType } from "../components/UI";
@@ -50,11 +49,9 @@ const typeLabel = (v) => CLAIM_TYPES.find(([k]) => k === v)?.[1] || v;
 const clock = (hhmm) => { const m = /^(\d{1,2}):(\d{2})/.exec(hhmm || ""); if (!m) return "—"; const h = Number(m[1]); return `${h % 12 || 12}:${m[2]} ${h < 12 ? "am" : "pm"}`; };
 
 export default function NewClaim() {
-  const { user } = useAuth(),
-    { id } = useParams(),
+  const { id } = useParams(),
     navigate = useNavigate(),
-    [searchParams] = useSearchParams(),
-    key = `getclaim-draft-${user._id}-${id || "new"}`;
+    [searchParams] = useSearchParams();
   const [claimId, setClaimId] = useState(id || null),
     [step, setStep] = useState(0),
     [detail, setDetail] = useState(null),
@@ -67,10 +64,7 @@ export default function NewClaim() {
     policies = useApi("/policies");
   const { register, watch, getValues, reset, setValue, trigger, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: () => {
-      try { return Promise.resolve(JSON.parse(localStorage.getItem(key))?.form || blank); }
-      catch { return Promise.resolve(blank); }
-    },
+    defaultValues: blank,
   });
   const values = watch(),
     vehicleList = Array.isArray(vehicles.data) ? vehicles.data : vehicles.data?.items || [],
@@ -81,17 +75,6 @@ export default function NewClaim() {
   const vehiclePolicies = useMemo(() => (Array.isArray(selectedPolicies.data) ? selectedPolicies.data : selectedPolicies.data?.items || []), [selectedPolicies.data]);
   const selectedPolicy = vehiclePolicies.find((p) => p._id === values.policy);
 
-  useEffect(() => {
-    const sub = watch((v) => localStorage.setItem(key, JSON.stringify({ form: v, claimId, savedAt: new Date().toISOString() })));
-    return () => sub.unsubscribe();
-  }, [watch, key, claimId]);
-  useEffect(() => {
-    try {
-      const cached = JSON.parse(localStorage.getItem(key));
-      if (!id && cached?.claimId) setClaimId(cached.claimId);
-      if (cached?.savedAt) setLastSaved(new Date(cached.savedAt));
-    } catch {}
-  }, [id, key]);
   useEffect(() => {
     const preset = searchParams.get("vehicleId");
     if (!id && preset && vehicleList.some((v) => v._id === preset) && !values.vehicle) setValue("vehicle", preset, { shouldValidate: true });
@@ -106,7 +89,6 @@ export default function NewClaim() {
     refresh(claimId)
       .then((d) => {
         if (d.claim.status !== "DRAFT") {
-          localStorage.removeItem(key);
           navigate("/portal/claims/" + claimId);
           return;
         }
@@ -207,7 +189,6 @@ export default function NewClaim() {
         const r = await api.post("/claims", body);
         cid = r.data._id;
         setClaimId(cid);
-        localStorage.setItem(key, JSON.stringify({ form: getValues(), claimId: cid }));
       }
       await refresh(cid);
       setLastSaved(new Date());
@@ -241,7 +222,6 @@ export default function NewClaim() {
     setBusy(true);
     try {
       await api.patch(`/claims/${cid}/submit`);
-      localStorage.removeItem(key);
       toast.success("Claim submitted. We’ll show every update here.");
       navigate("/portal/claims/" + cid);
     } catch (e) {
@@ -257,13 +237,14 @@ export default function NewClaim() {
   if (vehicles.error || policies.error || selectedPolicies.error || loadError) return <ErrorState message={loadError || "We couldn’t load your vehicles and policies."} retry={retry} />;
   const descLength = values.accident?.description?.trim().length || 0;
   const a = values.accident || {};
-  const savedText = lastSaved ? `Saved ${Math.max(0, Math.round((Date.now() - lastSaved.getTime()) / 60000)) < 1 ? "just now" : `${Math.round((Date.now() - lastSaved.getTime()) / 60000)} min ago`}` : "Answers are kept on this device as you type";
+  const savedText = lastSaved ? `Saved ${Math.max(0, Math.round((Date.now() - lastSaved.getTime()) / 60000)) < 1 ? "just now" : `${Math.round((Date.now() - lastSaved.getTime()) / 60000)} min ago`}` : "Save to your account after choosing a vehicle and policy";
 
   return (
-    <>
+    <div className="gc-next-claim-form">
       <PageHeader
+        visual="claims"
         title={id ? "Continue your claim" : "File a claim"}
-        description="Five steps. Your answers are kept on this device as you type, and saved to your account from step 2."
+        description="Five steps. Save to your account after choosing a vehicle and policy."
         action={values.vehicle && values.policy ? <button type="button" className="gc-btn gc-btn--secondary" disabled={busy} aria-busy={busy} onClick={() => save()}><Save className="gc-icon" aria-hidden="true" />Save and finish later</button> : null}
       />
       <nav aria-label="Claim steps">
@@ -471,7 +452,7 @@ export default function NewClaim() {
           </section>
         </aside>
       </div>
-    </>
+    </div>
   );
 }
 

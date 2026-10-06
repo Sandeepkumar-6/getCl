@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { plate as formatPlate } from "../utils/format";
 import { statusInfo } from "../utils/status";
 import { assets } from "../assets/manifest";
+import ContextualBackground from "./ContextualBackground";
 
 export const cx = (...parts) => parts.filter(Boolean).join(" ");
 
@@ -95,9 +96,10 @@ export function Empty({ title = "Nothing here yet", description, action, icon: I
   );
 }
 
-export function PageHeader({ title, description, action, meta }) {
+export function PageHeader({ title, description, action, meta, visual }) {
   return (
-    <header className="gc-page-head">
+    <header className={cx("gc-page-head", visual && "gc-context-head", visual && `gc-context-head--${visual}`)}>
+      {visual && <ContextualBackground variant={visual} />}
       <div>
         <h1>{title}</h1>
         {meta && <div className="gc-title-meta">{meta}</div>}

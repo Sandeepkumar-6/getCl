@@ -3,7 +3,12 @@ import { Plate, StatusChip } from "./UI";
 import { ClaimJourney, NextStep } from "./Journey";
 
 // A static sample claim for the public home page. No personal records and no API requests.
-const sample = { status: "MORE_INFORMATION_REQUIRED", submittedAt: "2026-09-22T08:00:00+05:30", dueAt: "2026-09-29T18:00:00+05:30", assignedSurveyor: null, estimatedLoss: 3_200_000 };
+const submittedAt = new Date();
+submittedAt.setDate(submittedAt.getDate() - 3);
+const dueAt = new Date();
+dueAt.setDate(dueAt.getDate() + 4);
+const sample = { status: "MORE_INFORMATION_REQUIRED", submittedAt: submittedAt.toISOString(), dueAt: dueAt.toISOString(), assignedSurveyor: null, estimatedLoss: 3_200_000 };
+const dueLabel = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(dueAt);
 
 export default function LandingProductPreview() {
   return (
@@ -16,7 +21,7 @@ export default function LandingProductPreview() {
           </div>
           <StatusChip status="MORE_INFORMATION_REQUIRED" role="POLICYHOLDER" />
         </div>
-        <NextStep level={2} tone="action" title="Upload a clear photo of the number plate" meta={[["Due", "29 Sep 2026"], ["Asked by", "Claims team"]]} action={{ label: "Upload photo", icon: Camera, onClick: () => {} }}>
+        <NextStep level={2} tone="action" title="Upload a clear photo of the number plate" meta={[["Due", dueLabel], ["Asked by", "Claims team"]]} action={{ label: "Upload photo", icon: Camera, onClick: () => {} }}>
           The plate isn’t readable in the front damage photo.
         </NextStep>
         <ClaimJourney claim={sample} role="POLICYHOLDER" survey={false} label="Sample claim progress" />
