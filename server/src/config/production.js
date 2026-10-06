@@ -25,7 +25,5 @@ export function productionConfigErrors(env = process.env) {
   const resendReady = env.EMAIL_TRANSPORT === "resend" && env.RESEND_API_KEY && env.EMAIL_FROM;
   if (!isPublicDemo(env) && !smtpReady && !resendReady)
     errors.push("Authenticated SMTP or Resend HTTPS email must be configured in production.");
-  if (!isPublicDemo(env) && !env.CLAMAV_HOST)
-    errors.push("CLAMAV_HOST is required to scan production uploads.");
   return errors;
 }

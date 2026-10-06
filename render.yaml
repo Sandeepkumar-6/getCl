@@ -1,4 +1,3 @@
-# Review costs before applying: API compute + 4 GB scanner compute + 4 GB disk.
 services:
   - type: web
     name: getclaim-api
@@ -27,43 +26,18 @@ services:
       - key: S3_BUCKET
         sync: false
       - key: S3_REGION
-        value: ap-south-1
+        value: auto
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_FORCE_PATH_STYLE
+        value: "false"
       - key: AWS_ACCESS_KEY_ID
         sync: false
       - key: AWS_SECRET_ACCESS_KEY
         sync: false
       - key: EMAIL_TRANSPORT
-        value: smtp
-      - key: SMTP_HOST
-        sync: false
-      - key: SMTP_PORT
-        value: "587"
-      - key: SMTP_SECURE
-        value: "false"
-      - key: SMTP_USER
-        sync: false
-      - key: SMTP_PASS
+        value: resend
+      - key: RESEND_API_KEY
         sync: false
       - key: EMAIL_FROM
         sync: false
-      - key: CLAMAV_HOST
-        fromService:
-          type: pserv
-          name: getclaim-scanner
-          property: host
-      - key: CLAMAV_PORT
-        value: "3310"
-  - type: pserv
-    name: getclaim-scanner
-    runtime: image
-    region: singapore
-    plan: 2c-4g
-    image:
-      url: docker.io/clamav/clamav:stable_base
-    envVars:
-      - key: CLAMAV_NO_MILTER
-        value: "true"
-    disk:
-      name: signatures
-      mountPath: /var/lib/clamav
-      sizeGB: 4
