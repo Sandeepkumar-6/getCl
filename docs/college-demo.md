@@ -1,0 +1,15 @@
+# Temporary college deployment
+
+Use Vercel Hobby for the frontend, Render Free for the API and Atlas Free for the isolated `getclaim_db` database. No paid services are required by this configuration.
+
+Set `PUBLIC_DEMO=true` and `NODE_ENV=production` on Render. Use a fresh JWT_SECRET of at least 64 characters. Configure the Atlas connection in Render's private MONGO_URI field, including `/getclaim_db` in the URI. Limit the dedicated database user to this database and restrict network access to the API's outbound addresses.
+
+Build the frontend with `VITE_PUBLIC_DEMO=true` on Vercel. The root vercel.json proxies /api to the Render service so cookies and CSRF protection work on the same website origin.
+
+New accounts use demo usernames and passwords. Account records, vehicles and claims are stored in Atlas. Shared seeded accounts are view-only. The application keeps HTTPS-only, HttpOnly session cookies, CSRF checks, password hashing and role restrictions.
+
+Use fictional details only. Email verification, email recovery, staff email MFA, surveyor applications and file uploads are unavailable in this demo. In-app notifications remain available. Production deployment without PUBLIC_DEMO still requires the full email, storage and scanning configuration.
+
+The demo seed runs only on an empty isolated database. Re-running the seed manually resets demo data, so do not use it after collecting presentation accounts.
+
+Render's free service sleeps when idle. Atlas persists data separately from the API filesystem. Free services have quotas and no guaranteed 90-day availability; keep a local copy for the presentation.

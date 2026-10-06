@@ -1,0 +1,29 @@
+# Temporary college demo: all resources created here use Render's free plan.
+# Atlas getclaim_db is required; this does not create a paid database or scanner.
+services:
+  - type: web
+    name: getclaim-api
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci --omit=dev --workspace=server
+    startCommand: node server/src/server.js
+    healthCheckPath: /api/health
+    autoDeployTrigger: off
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PUBLIC_DEMO
+        value: 'true'
+      - key: NODE_VERSION
+        value: '24'
+      - key: MONGOMS_DISABLE_POSTINSTALL
+        value: '1'
+      - key: JWT_SECRET
+        sync: false
+      - key: MONGO_URI
+        sync: false
+      - key: CLIENT_URL
+        value: https://getclaim-design-preview.vercel.app
+      - key: TRUST_PROXY_HOPS
+        value: '1'

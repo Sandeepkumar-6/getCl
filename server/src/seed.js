@@ -7,8 +7,9 @@ import path from "node:path";
 import { connectDB, disconnectDB } from "./config/db.js";
 import * as M from "./models/index.js";
 import { transitions } from "./services/claims.js";
+import { isPublicDemo } from "./config/demo.js";
 export async function seed() {
-  if (process.env.NODE_ENV === "production")
+  if (process.env.NODE_ENV === "production" && !isPublicDemo())
     throw new Error("Demo seed is disabled in production.");
   const allowed =
     mongoose.connection.name === "getclaim_db" ||

@@ -7,6 +7,8 @@ import { startVehicleAlertMonitor } from "./services/vehicleAlerts.js";
 import { smtpConfigErrors } from "./services/email.js";
 import { productionConfigErrors } from "./config/production.js";
 import { User } from "./models/index.js";
+import { isPublicDemo, seededDemoEmails } from "./config/demo.js";
+import { seed } from "./seed.js";
 if (
   !process.env.JWT_SECRET ||
   process.env.JWT_SECRET.length < 32 ||
@@ -15,7 +17,7 @@ if (
   logger.error("configuration_error", { message: "Set a long random JWT_SECRET before starting." });
   process.exit(1);
 }
-if (process.env.NODE_ENV === "production" && (process.env.STORAGE_DRIVER || "local") === "local") {
+if (process.env.NODE_ENV === "production" && !isPublicDemo() && (process.env.STORAGE_DRIVER || "local") === "local") {
   logger.error("configuration_error", { message: "Production requires durable storage. Set STORAGE_DRIVER=s3." });
   process.exit(1);
 }
@@ -30,7 +32,13 @@ if (productionErrors.length) {
 }
 try {
   await connectDB();
-  if (process.env.NODE_ENV === "production" && await User.exists({ email: { $in: ["customer@getclaim.in", "neha@getclaim.in", "surveyor@getclaim.in", "admin@getclaim.in", "superadmin@getclaim.in"] } }))
+  if (isPublicDemo()) {
+    const emails = await User.distinct("email");
+    if (emails.some((email) => !seededDemoEmails.includes(email) && !email.endsWith("@demo.getclaim.invalid")))
+      throw new Error("Public demo database contains non-demo accounts.");
+    if (emails.length === 0) await seed();
+  }
+  if (process.env.NODE_ENV === "production" && !isPublicDemo() && await User.exists({ email: { $in: seededDemoEmails } }))
     throw new Error("Demo accounts were found in the production database. Remove demo data before launch.");
   startSlaMonitor();
   startVehicleAlertMonitor();

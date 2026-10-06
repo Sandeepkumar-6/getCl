@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import { assert } from "../utils/errors.js";
 import { hasPermission } from "../config/permissions.js";
 import { readSession, validCsrf } from "./session.js";
+import { isPublicDemo, seededDemoEmails } from "../config/demo.js";
 
 export async function auth(req, res, next) {
   const { token, fromCookie, csrf } = readSession(req);
@@ -48,6 +49,8 @@ export async function auth(req, res, next) {
     403,
     "Change your temporary password before using the workspace.",
   );
+  if (isPublicDemo() && seededDemoEmails.includes(req.user.email) && !["GET", "HEAD", "OPTIONS"].includes(req.method) && req.path !== "/auth/logout")
+    assert(false, 403, "Shared demo accounts are view-only. Create your own demo account to try changes.");
   next();
 }
 export const roles =

@@ -5,6 +5,7 @@ import { assert } from "../utils/errors.js";
 import { persist, removeStoredFile } from "../middleware/uploads.js";
 import { sendEmail, sendPasswordResetEmail, sendVerificationEmail } from "../services/email.js";
 import { issueSession, clearSession } from "../middleware/session.js";
+import { isPublicDemo } from "../config/demo.js";
 
 const DUMMY_PASSWORD_HASH =
   "$2b$12$C6UzMDM.H6dfI/f/IKcEe.9U2ZJTRpr6pQsz3lYBK5nNq/3rm98e.";
@@ -39,7 +40,7 @@ const result = (res, user) => {
   const token = issueSession(res, user);
   return { user: safeUser(user), ...(token ? { token } : {}) };
 };
-const staffMfaRequired = () => process.env.NODE_ENV === "production" || process.env.REQUIRE_STAFF_MFA === "true";
+const staffMfaRequired = () => !isPublicDemo() && (process.env.NODE_ENV === "production" || process.env.REQUIRE_STAFF_MFA === "true");
 const mfaCodeHash = (challengeId, code) => crypto.createHmac("sha256", process.env.JWT_SECRET).update(`${challengeId}:${code}`).digest("hex");
 
 async function issueVerification(user) {
@@ -59,17 +60,21 @@ export async function updateProfile(req, res) {
 }
 
 export async function register(req, res) {
+  if (isPublicDemo()) {
+    assert(/^[a-z0-9][a-z0-9_-]{2,29}@demo\.getclaim\.invalid$/.test(req.body.email), 422, "Choose a demo username of 3 to 30 letters, numbers, underscores or hyphens.");
+  }
   const user = await User.create({
     ...req.body,
+    ...(isPublicDemo() ? { phone: "9999999999", emailVerifiedAt: new Date() } : {}),
     password: await bcrypt.hash(req.body.password, 12),
     role: "POLICYHOLDER",
     status: "ACTIVE",
     mustChangePassword: false,
   });
-  await issueVerification(user);
+  if (!isPublicDemo()) await issueVerification(user);
   res.status(201).json({
     ...result(res, user),
-    message: "Account created. Check your email to verify the address.",
+    message: isPublicDemo() ? "Demo account created. No email verification is needed." : "Account created. Check your email to verify the address.",
   });
 }
 

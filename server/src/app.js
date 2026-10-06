@@ -5,6 +5,7 @@ import helmet from "helmet";
 import cors from "cors";
 import { router } from "./routes/index.js";
 import { logger, requestLogger } from "./utils/logger.js";
+import { isPublicDemo } from "./config/demo.js";
 export const app = express();
 const proxyHops = Number(process.env.TRUST_PROXY_HOPS || 0);
 app.set("trust proxy", Number.isInteger(proxyHops) && proxyHops >= 0 ? proxyHops : 0);
@@ -23,6 +24,13 @@ app.use(cors({
 }));
 app.use(express.json({ limit: "100kb" }));
 app.use("/api", (req, res, next) => { res.set("Cache-Control", "no-store"); next(); });
+app.use("/api", (req, res, next) => {
+  if (!isPublicDemo()) return next();
+  if (req.is("multipart/*")) return res.status(403).json({ message: "File uploads are unavailable in the public demo." });
+  if (["/auth/forgot-password", "/auth/reset-password", "/auth/verify-email", "/auth/resend-verification", "/auth/surveyor-apply"].includes(req.path))
+    return res.status(403).json({ message: "This feature is unavailable in the public demo." });
+  next();
+});
 app.use((req, res, next) => {
   const supplied = req.get("x-request-id");
   req.id = supplied && /^[A-Za-z0-9._-]{1,100}$/.test(supplied) ? supplied : crypto.randomUUID();

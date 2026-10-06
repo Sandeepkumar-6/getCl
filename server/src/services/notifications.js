@@ -2,6 +2,7 @@ import { Notification, User } from "../models/index.js";
 import { sendEmail } from "./email.js";
 import { sendSms } from "./sms.js";
 import { logger } from "../utils/logger.js";
+import { isPublicDemo } from "../config/demo.js";
 
 const absoluteLink = (deepLink) =>
   `${(process.env.CLIENT_URL || "http://localhost:5173").split(",")[0].replace(/\/$/, "")}${deepLink}`;
@@ -23,6 +24,12 @@ async function attempt(channel, notification, user, send) {
 }
 
 async function deliver(notification, user) {
+  if (isPublicDemo()) {
+    notification.delivery = { email: "SKIPPED", sms: "SKIPPED" };
+    notification.channels = ["IN_APP"];
+    await notification.save();
+    return;
+  }
   const link = absoluteLink(notification.deepLink || "/portal/notifications");
   const text = `${notification.message} Open getClaim: ${link}`;
   const [email, sms] = await Promise.all([

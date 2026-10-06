@@ -53,6 +53,8 @@ export function PasswordInput({ show, onToggle, ...props }) {
 // The same three points on both screens; the icons only mark them.
 const POINTS = [[ClipboardCheck, "File a claim and save it to finish later"], [Clock3, "See what happens next, who does it and by when"], [FolderLock, "Keep policy, service and claim documents together"]];
 const DEMO = [["Policyholder", "customer", "Customer"], ["Surveyor", "surveyor", "Surveyor"], ["Admin", "admin", "Admin"], ["Super admin", "superadmin", "SuperAdmin"]];
+const PUBLIC_DEMO = import.meta.env.VITE_PUBLIC_DEMO === "true";
+const demoUsername = z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9_-]{2,29}$/, "Use 3–30 letters, numbers, underscores or hyphens");
 
 export default function Auth({ register: signup = false }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -64,12 +66,12 @@ export default function Auth({ register: signup = false }) {
   const { authenticate } = useAuth();
   const from = location.state?.from;
   const schema = z.object({
-    email: z.string().email("Enter an email address like name@example.in"),
+    email: PUBLIC_DEMO ? (signup ? demoUsername : demoUsername.or(z.string().email())) : z.string().email("Enter an email address like name@example.in"),
     password: signup ? strongPassword : z.string().min(1, "Enter your password").max(72),
     ...(signup
       ? {
           name: z.string().trim().min(2, "Enter your full name"),
-          phone: z.string().regex(/^[6-9]\d{9}$/, "Enter a 10-digit mobile number starting with 6, 7, 8 or 9"),
+          phone: PUBLIC_DEMO ? z.string().default("9999999999") : z.string().regex(/^[6-9]\d{9}$/, "Enter a 10-digit mobile number starting with 6, 7, 8 or 9"),
         }
       : {}),
   });
@@ -77,12 +79,15 @@ export default function Auth({ register: signup = false }) {
   const password = watch("password") || "";
   const submit = async (data) => {
     try {
-      const account = await authenticate(signup ? "register" : "login", data);
+      const account = await authenticate(signup ? "register" : "login", {
+        ...data,
+        email: PUBLIC_DEMO && !data.email.includes("@") ? `${data.email}@demo.getclaim.invalid` : data.email,
+      });
       if (account.mfaRequired) {
         setChallenge(account.challengeId);
         return;
       }
-      toast.success(signup ? "Account created. Check your email for the verification link." : `Signed in as ${account.name}.`);
+      toast.success(signup ? (PUBLIC_DEMO ? "Demo account created. You can sign in with this username." : "Account created. Check your email for the verification link.") : `Signed in as ${account.name}.`);
       navigate(account.mustChangePassword ? "/change-password" : from && from.startsWith("/portal") ? from : "/portal", { replace: true });
     } catch (e) {
       toast.error(errorMessage(e));
@@ -140,13 +145,14 @@ export default function Auth({ register: signup = false }) {
             ) : (
             <form className="gc-form gc-auth-form" onSubmit={handleSubmit(submit)} noValidate>
               {signup && <Field label="Full name" error={errors.name?.message}><input autoComplete="name" {...register("name")} /></Field>}
-              <Field label="Email address" error={errors.email?.message}><input type="email" autoComplete="email" inputMode="email" placeholder="name@example.in" {...register("email")} /></Field>
-              {signup && <Field label="Mobile number" hint="We send claim updates to this number" error={errors.phone?.message}><input type="tel" inputMode="numeric" autoComplete="tel-national" maxLength={10} placeholder="98765 43210" {...register("phone")} /></Field>}
+              {PUBLIC_DEMO && <p className="gc-note">College demo: choose a username and use fictional details. Your account and changes are saved. Email recovery and uploads are unavailable.</p>}
+              <Field label={PUBLIC_DEMO ? "Demo username" : "Email address"} error={errors.email?.message}><input type={PUBLIC_DEMO ? "text" : "email"} autoComplete={PUBLIC_DEMO ? "username" : "email"} inputMode={PUBLIC_DEMO ? "text" : "email"} placeholder={PUBLIC_DEMO ? "your_demo_name" : "name@example.in"} {...register("email")} /></Field>
+              {signup && !PUBLIC_DEMO && <Field label="Mobile number" hint="We send claim updates to this number" error={errors.phone?.message}><input type="tel" inputMode="numeric" autoComplete="tel-national" maxLength={10} placeholder="98765 43210" {...register("phone")} /></Field>}
               <Field label="Password" error={errors.password?.message}>
                 <PasswordInput show={showPassword} onToggle={() => setShowPassword(!showPassword)} autoComplete={signup ? "new-password" : "current-password"} aria-describedby={signup ? "password-rules" : undefined} {...register("password")} />
               </Field>
               {signup && <PasswordRules value={password} id="password-rules" />}
-              {!signup && <Link className="gc-link gc-auth-forgot" to="/forgot-password">Forgot your password?</Link>}
+              {!signup && !PUBLIC_DEMO && <Link className="gc-link gc-auth-forgot" to="/forgot-password">Forgot your password?</Link>}
               {signup && <p className="gc-note">We use your details to run your claims. Read the <Link className="gc-link" to="/privacy-policy">privacy policy</Link>.</p>}
               <button className="gc-btn gc-btn--lg gc-btn--block" type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
                 {isSubmitting && <span className="gc-spinner" aria-hidden="true" />}
@@ -155,7 +161,7 @@ export default function Auth({ register: signup = false }) {
             </form>
             )}
             <div className="gc-auth-alt">
-              <p className="gc-note">Insurance surveyor? <Link className="gc-link" to="/surveyor-apply">Apply for surveyor access</Link></p>
+              {!PUBLIC_DEMO && <p className="gc-note">Insurance surveyor? <Link className="gc-link" to="/surveyor-apply">Apply for surveyor access</Link></p>}
               {!signup && import.meta.env.DEV && (
                 <details className="gc-demo-accounts">
                   <summary>Use a demo account</summary>
